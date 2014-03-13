@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">DMService</string>
+    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Softwareopdatering</string>
+    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Annuller software</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s anmoder om en kundeservicesession på din telefon. Åbne applikationer lukkes muligvis, og der opkræves muligvis normale datapriser. Vil du oprette forbindelse nu?"</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s anmoder om en kundeservicesession på din telefon. Åbne applikationer lukkes muligvis. Vil du oprette forbindelse nu?</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Der er en systemopdatering for din telefon,\nder kan tage adskillige minutter at installere.</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Systemopdatering er blevet annulleret.\nDu vil blive spurgt igen senere.</string>
+    <string name="dm_alert_dlg_ok_text">OK</string>
+    <string name="dm_alert_dlg_cancel_text">Annuller</string>
+    <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Enhedshåndtering</string>
+    <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Systembesked</string>
+    <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>
+    <string name="DM_SERVICE_ALERT_BUTTON_NO">Afvis</string>
+    <string name="dm_session_button_confirm">Opdater</string>
+    <string name="dm_session_button_reject">Annuller</string>
+    <string name="dm_session_confirmation_title">Systemopdatering</string>
+    <string name="dm_session_confirmation_message">Der er en softwareopdatering til din telefon tilgængelig</string>
+    <string name="dm_session_confirmation_notification_label">Systemopdatering</string>
+    <string name="dm_session_confirmation_notification_message">Ny anmodning om DM-session</string>
+    <string name="dm_session_information_notification_label">Systemopdatering</string>
+    <string name="dm_session_information_notification_message1">Server har initieret en anmodning</string>
+    <string name="dm_session_information_notification_message2_success">Enheden har fuldført serverens anmodning</string>
+    <string name="dm_session_information_notification_message2_fail">Enheden kunne ikke fuldføre serverens anmodning</string>
+
+</resources>
