@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">DMService</string>
+    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Programinės įrangos naujinys</string>
+    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Programinės įrangos atšaukimas</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s prašo kliento aptarnavimo seanso jūsų telefone. Gali būti uždarytos atidarytos programos ir taikoma įprasta duomenų perdavimo sparta. Ar prisijungti?"</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s prašo kliento aptarnavimo seanso jūsų telefone. Gali būti uždarytos atidarytos programos. Ar prisijungti?"</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Jūsų telefonui yra sistemos naujinys,\nkuriam įdiegti gali reikėti iki kelių minučių.</string>
+    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Sistemos atnaujinimas atšauktas.\nVėliau dar kartą bus pasiūlyta įdiegti naujinį.</string>
+    <string name="dm_alert_dlg_ok_text">Gerai</string>
+    <string name="dm_alert_dlg_cancel_text">Atšaukti</string>
+    <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Įrenginių tvarkytuvė</string>
+    <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Sistemos pranešimas</string>
+    <string name="DM_SERVICE_ALERT_BUTTON_YES">Gerai</string>
+    <string name="DM_SERVICE_ALERT_BUTTON_NO">Atmesti</string>
+    <string name="dm_session_button_confirm">Atnaujinti</string>
+    <string name="dm_session_button_reject">Atšaukti</string>
+    <string name="dm_session_confirmation_title">Sistemos naujinys</string>
+    <string name="dm_session_confirmation_message">Yra sistemos naujinys jūsų telefonui</string>
+    <string name="dm_session_confirmation_notification_label">Sistemos naujinys</string>
+    <string name="dm_session_confirmation_notification_message">Nauja DM seanso užklausa</string>
+    <string name="dm_session_information_notification_label">Sistemos naujinys</string>
+    <string name="dm_session_information_notification_message1">Serveris inicijavo užklausą</string>
+    <string name="dm_session_information_notification_message2_success">Įrenginys užbaigė serverio užklausą</string>
+    <string name="dm_session_information_notification_message2_fail">Įrenginiui nepavyko užbaigti serverio užklausos</string>
+
+</resources>
