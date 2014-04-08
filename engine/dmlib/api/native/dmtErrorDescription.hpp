@@ -188,7 +188,7 @@ public:
   */
   inline BOOLEAN operator==(void* p) const 
   { 
-      return m_nErrorCode == (int)p; 
+      return m_nErrorCode == (intptr_t)p; 
   }
   
  /**
@@ -204,7 +204,7 @@ public:
   */
   inline BOOLEAN operator!=(void* p) const 
   { 
-      return m_nErrorCode != (int)p;
+      return m_nErrorCode != (intptr_t)p;
   }
 
  /**
