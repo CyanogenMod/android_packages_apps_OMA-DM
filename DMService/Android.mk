@@ -52,10 +52,9 @@ LOCAL_STATIC_JAVA_LIBRARIES := com.android.omadm.plugin \
                                com.android.omadm.plugin.diagmon
 
 LOCAL_JAVA_LIBRARIES := telephony-common
-LOCAL_REQUIRED_MODULES := libdmengine \
-                          libdmjavaplugin \
-                          dmAccounts.xml \
-                          com.android.omadm.service.xml
+LOCAL_JNI_SHARED_LIBRARIES := libdmengine libdmjavaplugin
+LOCAL_REQUIRED_MODULES :=  dmAccounts.xml com.android.omadm.service.xml
+
 include $(BUILD_PACKAGE)
 
 # Use the following include to make our test apk.
