@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Software Update</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Software Cancel</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s requests a customer care session to your phone. Open applications may be closed and normal data rates may apply. Connect now?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s requests a customer care session to your phone. Open applications may be closed. Connect now?</string>
-    <string name='PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE'>There is a system update for your phone,\nwhich may take several minutes to install.</string>
-    <string name='PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL'>System update has been canceled.\nYou will be prompted again for the update later.</string>
-    <string name="dm_alert_dlg_ok_text">OK</string>
-    <string name="dm_alert_dlg_cancel_text">Cancel</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Device Management</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">System Message</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>

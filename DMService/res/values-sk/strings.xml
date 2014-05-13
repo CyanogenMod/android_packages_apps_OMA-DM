@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Aktualizácia softvéru</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Zrušenie softvéru</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s žiada o reláciu starostlivosti o zákazníka do vášho telefónu. Otvorené aplikácie sa môžu zavrieť a účtovať sa budú bežné sadzby za prenos dát. Pripojiť teraz?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s žiada o reláciu starostlivosti o zákazníka do vášho telefónu. Otvorené aplikácie sa môžu zavrieť. Pripojiť teraz?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Pre váš telefón je k dispozícii aktualizácia systému,\nktorej inštalácia môže niekoľko minút trvať.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Aktualizácia systému bola zrušená.\nK aktualizácii budete opäť vyzvaní neskôr.</string>
-    <string name="dm_alert_dlg_ok_text">OK</string>
-    <string name="dm_alert_dlg_cancel_text">Zrušiť</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Správa zariadenia</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Systémové hlásenie</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>

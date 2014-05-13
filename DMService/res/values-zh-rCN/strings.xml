@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">设备管理服务</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">软件更新</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">取消软件</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s 向您的手机请求客户服务会话.可能会关闭打开的应用程序并产生正常数据费率.现在连接?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s向您的手机请求客户服务会话.可能会关闭打开的应用程序.现在连接?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">收到手机的系统更新,\n安装该更新可能需要几分钟时间.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">已取消系统更新.\n稍后将再次提醒您进行更新.</string>
-    <string name="dm_alert_dlg_ok_text">确定</string>
-    <string name="dm_alert_dlg_cancel_text">取消</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">设备管理</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">系统信息</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">确定</string>

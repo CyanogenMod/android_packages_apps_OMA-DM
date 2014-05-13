@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Ажурирање софтвера</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Отказивање софтвера</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s захтева сесију корисничке подршке са вашим телефоном. Отворене апликације можда ће бити затворене и може да дође до нормалних трошкова за пренос података. Да ли желите одмах да се повежете?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s захтева сесију корисничке подршке са вашим телефоном. Отворене апликације можда ће бити затворене. Да ли желите одмах да се повежете?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Доступна је системска исправка за ваш телефон,\nчија инсталација може да потраје неколико минута.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Ажурирање система је отказано.\nКасније ће се од вас поново тражити да обавите ажурирање.</string>
-    <string name="dm_alert_dlg_ok_text">У реду</string>
-    <string name="dm_alert_dlg_cancel_text">Откажи</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Управљање уређајем</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Системска порука</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">У реду</string>

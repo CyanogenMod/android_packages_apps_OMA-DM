@@ -16,11 +16,6 @@
 
 package com.android.omadm.service;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.Uri;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -29,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ProtocolException;
 import java.net.Proxy;
@@ -44,8 +38,6 @@ public class DMHttpConnector {
     private static final boolean DBG = DMClientService.DBG;
 
     private HttpURLConnection mConnection;
-
-    private boolean mIsFotaChannelAvailable;
 
     private static final String USER_AGENT = "User-Agent";
 
@@ -99,128 +91,23 @@ public class DMHttpConnector {
      * @param apnName
      */
     public void enableApnByName(String apnName) {
-        /* Apn setting DB is defined in
-         * frameworks/base/core/java/android/provider/Telephony.java.
-         * In ApnSetting DB, New DM apn item is always let Apn type equal to Apn name.
-         */
-        String apnType = apnName;
-
-        if (DBG) logd("Enable Apn name=" + apnName + " type=" + apnType);
-
-        //ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        //invoke chain:
-        //1)ConnectivityManager ==> MobileDataStateTracker.startUsingNetworkFeature()
-        //2)startUsingNetworkFeature()==>PhoneService.enableApnType
-        //cm.startUsingNetworkFeature(ConnectivityManager.TYPE_MOBILE, mApnType);
+        if (DBG) logd("Enable Apn name=" + apnName);
     }
 
     /**
      * Send an HTTP request.
      * Called from JNI code.
      *
-     * @param url the URL to request
+     * @param urlString the URL to request
      * @param requestData the SyncML package to send
      * @param hmacValue the HMAC value to send as a request header
      * @return
      */
-    public int sendRequest(String url, byte[] requestData, String hmacValue) {
-        if (!mIsFotaChannelAvailable) {
-            if (isDataNetworkLteOrCdma() && !isWifiConnected() && isPhoneTypeLTE()) {
-                requestRouteAvailable(url);
-                mIsFotaChannelAvailable = true;
-            } else {
-                logd("NW type is not LTE/eHRPD or not a 4G device");
-            }
-        } else {
-            requestRouteAvailable(url);
-            logd("fota data channel already enabled");
-        }
-
+    public int sendRequest(String urlString, byte[] requestData, String hmacValue) {
         if (mContentType == null) {
             mContentType = MIME_TYPE_SYNCML_DM_WBXML;
         }
-        return executePOST(url, requestData, hmacValue);
-    }
 
-    private boolean isWifiConnected() {
-        Log.d(TAG, "Inside isWifiConnected");
-        ConnectivityManager cm = (ConnectivityManager) mContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) {
-            return false;
-        }
-        if (cm.getActiveNetworkInfo() == null) {
-            return false;
-        }
-
-        // return true only when WiFi is connected
-        return cm.getActiveNetworkInfo().isConnected() &&
-                (cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_WIFI);
-
-        /*we have one more way to find out , we can use either of them
-        if (cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
-            return true;
-        }*/
-    }
-
-    private static boolean isPhoneTypeLTE() {
-        return DMSettingsHelper.isPhoneTypeLTE();
-    }
-
-    private boolean requestRouteAvailable(String url) {
-        ConnectivityManager mConnMgr = (ConnectivityManager) mContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        SharedPreferences p = mContext.getSharedPreferences(DMHelper.FOTA_APN_PREFERENCE_KEY, 0);
-        String apnInterfaceName = p.getString(DMHelper.APN_INTERFACE_NAME_KEY, null);
-        Log.d(TAG, "Interface Name = " + apnInterfaceName);
-        Uri uri = Uri.parse(url);
-        Log.d(TAG, "uri.getHost = " + uri.getHost());
-
-        InetAddress ipAddr;
-        try {
-            ipAddr = InetAddress.getByName(uri.getHost());
-            Log.d(TAG, "ipAddr = " + ipAddr);
-            Log.d(TAG, "getHostAddress, ipAddr = " + ipAddr.getHostAddress());
-        } catch (UnknownHostException e) {
-            Log.d(TAG, "requestRouteAvailable: unknown host", e);
-            ipAddr = null;
-        }
-
-        boolean result = false;
-        if (ipAddr != null) {
-            result = mConnMgr
-                    .requestRouteToHostAddress(ConnectivityManager.TYPE_MOBILE_FOTA, ipAddr);
-        } else {
-            Log.d(TAG, "requestRouteToHostAddress = " + result);
-        }
-        Log.d(TAG, "requestRouteToHostAddress = " + result);
-        return result;
-    }
-
-    private boolean isDataNetworkLteOrCdma() {
-        TelephonyManager tm = (TelephonyManager) mContext
-                .getSystemService(Context.TELEPHONY_SERVICE);
-
-        int networkType = tm.getDataNetworkType();
-
-        switch (networkType) {
-            case TelephonyManager.NETWORK_TYPE_EVDO_0:
-            case TelephonyManager.NETWORK_TYPE_EVDO_A:
-            case TelephonyManager.NETWORK_TYPE_1xRTT:
-            case TelephonyManager.NETWORK_TYPE_EVDO_B:
-            case TelephonyManager.NETWORK_TYPE_EHRPD:
-            case TelephonyManager.NETWORK_TYPE_LTE:
-                if (DBG) logd("NW type is LTE or CDMA: " + networkType);
-                return true;
-
-            default:
-                if (DBG) logd("NW type neither LTE nor CDMA: " + networkType);
-                return false;
-        }
-    }
-
-    private int executePOST(String urlString, byte[] requestData, String hmacValue) {
         if (DBG) logd("Post url=" + urlString + " HMAC value=" + hmacValue);
 
         if (urlString.isEmpty()) {
@@ -236,6 +123,8 @@ public class DMHttpConnector {
             }
 
             url = new URL(urlString);
+
+            // STOPSHIP: remove this hack for Sprint
             if (url.getHost().contains("sprint")) {
                 String serverUrl = DMHelper.getServerUrl(mContext);
                 if (!TextUtils.isEmpty(serverUrl)) {
@@ -252,8 +141,8 @@ public class DMHttpConnector {
                 if (DBG) logd("opening direct connection");
                 connection = (HttpURLConnection) url.openConnection();
             }
-            mConnection = connection;
 
+            mConnection = connection;
         } catch (Exception e) {
             Log.e(TAG, "bad URL", e);
             return DMResult.SYNCML_DM_INVALID_URI;
@@ -391,22 +280,11 @@ public class DMHttpConnector {
         mContentType = type;
     }
 
-    public void cancelSession() {
-        Log.e(TAG, "Abort the session");
-        if (mConnection != null) {
-            mConnection.disconnect();
-        }
-    }
-
     public int closeSession() {
         if (mConnection != null) {
             mConnection.disconnect();
         }
 
-        //if(mApnType!=null){
-        //	ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        //	cm.stopUsingNetworkFeature(ConnectivityManager.TYPE_MOBILE, mApnType);
-        //}
         return 1;
     }
 

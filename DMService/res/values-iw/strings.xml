@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">\u200fDMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">עדכון תוכנה</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">ביטול תוכנה</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s מבקש הפעלת שירות לקוחות לטלפון שלך. יישומים פתוחים עשויים להיסגר ועשויים לחול קצבי נתונים רגילים. להתחבר עכשיו?‬"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s מבקש הפעלת שירות לקוחות לטלפון שלך. יישומים פתוחים עשויים להיסגר. להתחבר עכשיו?‬</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">קיים עדכון מערכת עבור הטלפון שלך,\nשהתקנתו עשויה להימשך מספר דקות.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">עדכון המערכת בוטל.\nתתבקש שוב לעדכן במועד מאוחר יותר.</string>
-    <string name="dm_alert_dlg_ok_text">אישור</string>
-    <string name="dm_alert_dlg_cancel_text">בטל</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">ניהול התקן</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">הודעת מערכת</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">אישור</string>

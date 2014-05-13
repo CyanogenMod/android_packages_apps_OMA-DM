@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -29,7 +28,6 @@ import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Pair;
 
 import com.android.omadm.plugin.DmtData;
 import com.android.omadm.plugin.DmtException;
@@ -78,8 +76,6 @@ public class DMClientService extends IntentService {
 
     /** AsyncTask to manage the settings SQLite database. */
     private DMConfigureTask mDMConfigureTask;
-
-    private final AtomicBoolean mIsDmtLocked = new AtomicBoolean();
 
     /**
      * Helper class for DM session packages.
@@ -211,7 +207,9 @@ public class DMClientService extends IntentService {
         logd("XXXXX mWakeLock.release() in DMClientService.onDestroy() XXXXX");
         mWakeLock.release();
 
-        mSessionTimeOutHandler.removeCallbacks(mAbortSession);
+        synchronized (mSessionLock) {
+            mSessionTimeOutHandler.removeCallbacks(mAbortSession);
+        }
 
         if (DBG) logd("leave onDestroy");
     }
@@ -250,14 +248,6 @@ public class DMClientService extends IntentService {
         // wrong with DMSettingsProvider) we are continuing execution
 
         try {
-            // check if DMT still locked and lock DMT and protect access from
-            // DMSettingsProvider
-            if (mIsDmtLocked.get()) {
-                Log.e(TAG, "WARNING! Time expired but DMT still locked.");
-            } else {
-                lockDmt();
-            }
-
             synchronized (mSessionLock) {
                 mSession = new DMSession(this);
                 mServiceID = pkg.mGlobalSID;
@@ -352,9 +342,6 @@ public class DMClientService extends IntentService {
             intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
             sendBroadcast(intent);
         } finally {
-            // unlock DMT to give access from DMSettingsProvider
-            unlockDmt();
-
             //set static flag "DM session in progress" to false. Used from DMIntentReceiver
             sIsDMSessionInProgress = false;
         }
@@ -389,14 +376,6 @@ public class DMClientService extends IntentService {
             return;
         }
         if (DBG) Log.d(TAG, "getConfigDB() succeeded");
-
-        // check if DMT still locked and lock DMT and protect access from
-        // DMSettingsProvider
-        if (mIsDmtLocked.get()) {
-            Log.e(TAG, "WARNING! Time expired but DMT still locked.");
-        } else {
-            lockDmt();
-        }
 
         switch (intentType) {
             case DMIntent.TYPE_PKG0_NOTIFICATION: {
@@ -574,20 +553,7 @@ public class DMClientService extends IntentService {
         return null;
     }
 
-    // DMT locking mechanism. Used by DMSettingsProvider
-    public void lockDmt() {
-        mIsDmtLocked.set(true);
-    }
-
-    public void unlockDmt() {
-        mIsDmtLocked.set(false);
-    }
-
-    public boolean isDmtLocked() {
-        return mIsDmtLocked.get();
-    }
-
-    public String parseBootstrapServerId(byte[] data, boolean isWbxml) {
+    String parseBootstrapServerId(byte[] data, boolean isWbxml) {
         String retServerId = NativeDM.parseBootstrapServerId(data, isWbxml);
         if (DBG) Log.d(TAG, "parseBootstrapServerId retServerId=" + retServerId);
 
@@ -629,7 +595,7 @@ public class DMClientService extends IntentService {
         return retServerId;
     }
 
-    public static int processBootstrapScript(byte[] data, boolean isWbxml, String serverId) {
+    private static int processBootstrapScript(byte[] data, boolean isWbxml, String serverId) {
         int retcode = NativeDM.processBootstrapScript(data, isWbxml, serverId);
         if (DBG) Log.d(TAG, "processBootstrapScript retcode=" + retcode);
         return retcode;
@@ -729,11 +695,11 @@ public class DMClientService extends IntentService {
         return true;
     }
 
-    static void logd(String msg) {
+    private static void logd(String msg) {
         Log.d(TAG, msg);
     }
 
-    static void loge(String msg, Throwable tr) {
+    private static void loge(String msg, Throwable tr) {
         Log.e(TAG, msg, tr);
     }
 }

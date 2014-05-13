@@ -86,8 +86,6 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         if (action.equals(DMIntent.ACTION_WAP_PUSH_RECEIVED_INTERNAL)) {
             handleWapPushIntent(context, intent);
-        } else if (action.equals(DMIntent.ACTION_CALL_AND_DATA_STATE_READY)) {
-            handleCallDataStateReadyIntent(context);
         } else if (action.equals(DMIntent.ACTION_CLOSE_NOTIFICATION_INFO)) {
             DMHelper.cancelNotification(context, DMHelper.NOTIFICATION_INFORMATIVE_ID);
         } else if (action.equals(DMIntent.ACTION_USER_CONFIRMED_DM_SESSION)) {
@@ -101,8 +99,8 @@ public class DMIntentReceiver extends BroadcastReceiver {
         } else if (action.equals(ACTION_NOTIFY_RESULT_TO_SERVER)) {
             // FIXME old comment: change this to the DMIntent name
             handleNotifyResultToServer(context, intent);
-        } else if (action.equals(DMIntent.ACTION_APN_STATE_ACTIVE_READY)) {
-            handleApnStateActive(context);
+        } else if (action.equals(DMIntent.ACTION_DATA_CONNECTION_READY)) {
+            handleDataConnectionReady(context);
         } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             Log.d(TAG, "Ignoring Intent.ACTION_BOOT_COMPLETED");
             //if (!(isPhoneTypeLTE() || isPhoneTypeCDMA3G(context))) {
@@ -119,13 +117,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 } else {
                     SharedPreferences.Editor ed = p.edit();
                     ed.putString(DMHelper.IMEI_VALUE_KEY, intent.getStringExtra("gsmimei"));
-                    ed.commit();
+                    ed.apply();
                 }
             } else if (isPhoneTypeCDMA3G(context)) {
                 SharedPreferences p = context.getSharedPreferences(DMHelper.AKEY_PREFERENCE_KEY, 0);
                 SharedPreferences.Editor ed = p.edit();
                 ed.putString(DMHelper.AKEY_VALUE_KEY, intent.getStringExtra("akey"));
-                ed.commit();
+                ed.apply();
             }
             handleBootCompletedIntent(context);
         } else if (action.equals(DMIntent.ACTION_INJECT_PACKAGE_0_INTERNAL)) {
@@ -163,6 +161,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
                     DMIntent.FIELD_SERVERID + " is null or an empty string.");
             return;
         }
+
         String alertString = intent.getStringExtra(DMIntent.FIELD_ALERT_STR);
         if (TextUtils.isEmpty(alertString)) {
             Log.d(TAG, "Error! Can't start FOTA session: " +
@@ -180,21 +179,21 @@ public class DMIntentReceiver extends BroadcastReceiver {
         ed.putLong(DMHelper.MESSAGE_TIMESTAMP_ID_KEY, requestID);
         ed.putString(DMHelper.FOTA_SERVER_ID_KEY, strServerID);
         ed.putString(DMHelper.FOTA_ALERT_STRING_KEY, alertString);
-        ed.commit();
+        ed.apply();
 
         if (isWifiConnected(context) || isDataNetworkAcceptable(context)) {
             if (!isWifiConnected(context) && isDataNetworkAcceptable(context) && isPhoneTypeLTE()) {
                 Log.d(TAG, "handleClientInitiatedFotaIntent, start apn monitoring service"
                         + " for requestID " + requestID);
                 setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
-                startApnStateMonitoringService(context);
+                startDataConnectionService(context);
             } else {
                 Log.d(TAG, "handleClientInitiatedFotaIntent starting DM session");
                 startDMSession(context);
             }
         } else {
             Log.d(TAG, "handleClientInitiatedFotaIntent: start data/call state monitoring");
-            startDataAndCallStateMonitoringService(context);
+            startDataConnectionService(context);
         }
     }
 
@@ -245,43 +244,6 @@ public class DMIntentReceiver extends BroadcastReceiver {
             initialWapPending = true;
             Intent intentConnmoInit = new Intent("com.android.omadm.service.wait_timer_alert");
             context.sendBroadcast(intentConnmoInit);
-        }
-    }
-
-    private void handleCallDataStateReadyIntent(Context context) {
-        // check if message is not expired
-        if (DMHelper.isMessageExpired(context)) {
-            DMHelper.cleanAllResources(context);
-            Log.d(TAG, "handleCallDataStateReadyIntent(): message is expired.");
-            return;
-        }
-
-        int currentState = getState(context);
-
-        // nothing there
-        if (currentState == DMHelper.STATE_IDLE) {
-            DMHelper.cleanAllResources(context);
-            Log.d(TAG, "Call/data state changed: there is no message to proceed.");
-            return;
-        }
-
-        if (currentState == DMHelper.STATE_SESSION_IN_PROGRESS) {
-            Log.d(TAG, "Call/data state changed: session in progress; doing nothing.");
-            return;
-        }
-
-        if (isWifiConnected(context) || isDataNetworkAcceptable(context)) {
-            if (!isWifiConnected(context) && isDataNetworkAcceptable(context) && isPhoneTypeLTE()) {
-                Log.d(TAG, "handleCallDataStateReadyIntent, start apn monitoring service");
-                setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
-                startApnStateMonitoringService(context);
-            } else {
-                Log.d(TAG, "handleCallDataStateReadyIntent: start DM session");
-                startDMSession(context);
-            }
-        } else {
-            Log.d(TAG, "handleCallDataStateReadyIntent: restart data/call state monitoring");
-            startDataAndCallStateMonitoringService(context);
         }
     }
 
@@ -365,8 +327,6 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 DMHelper.cleanAllResources(context);
                 Log.d(TAG, "Time alert: there is no message to proceed.");
                 break;
-
-
         }
 
         if (currentState == DMHelper.STATE_IDLE) {
@@ -418,7 +378,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         ed.putString(DMHelper.CORRELATOR_KEY, intent.getStringExtra(DMIntent.FIELD_CORR));
         ed.putString(DMHelper.SERVER_ID_KEY, intent.getStringExtra(DMIntent.FIELD_SERVERID));
 
-        ed.commit();
+        ed.apply();
 
         if (isDataNetworkAcceptable(context) && !isWifiConnected(context) && isPhoneTypeLTE()) {
             int mgetFotaApnState = getFotaApnState(context);
@@ -429,14 +389,15 @@ public class DMIntentReceiver extends BroadcastReceiver {
             // for LTE and eHRPD coverage , switch the apn before FDM
             Log.d(TAG, "handleNotifyResultToServer starting FOTA APN");
             setFotaApnState(context, DMHelper.FOTA_APN_STATE_REPORT_DM_SESSION);
-            startApnStateMonitoringService(context);
+            startDataConnectionService(context);
         } else {
             sendNotifyIntent(context);
         }
     }
 
-    private void handleApnStateActive(Context context) {
-        Log.d(TAG, "Inside handleApnStateActive");
+    // start session if we have network connectivity
+    private void handleDataConnectionReady(Context context) {
+        Log.d(TAG, "Inside handleDataConnectionReady");
         int fotaApnState = getFotaApnState(context);
         Log.d(TAG, "FOTA APN state is " + fotaApnState);
 
@@ -549,7 +510,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         ed.putLong(DMHelper.MESSAGE_TIMESTAMP_ID_KEY, System.nanoTime());
         ed.putInt(DMHelper.DM_UI_MODE_KEY, uiMode);
 
-        ed.commit();
+        ed.apply();
 
 //        PendingResult pendingResult = goAsync();
 //        DMParseSaveWapMsgRunnable dmParseSaveWapMsgRunnable
@@ -609,13 +570,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 Log.d(TAG, "startProcess(), start apn state monitoring service");
                 setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
                 //start apn state monitoring service
-                startApnStateMonitoringService(context);
+                startDataConnectionService(context);
             } else {
                 startDMSession(context);
             }
             //clearSharedProperties();
         } else {
-            startDataAndCallStateMonitoringService(context);
+            startDataConnectionService(context);
         }
     }
 
@@ -690,13 +651,22 @@ public class DMIntentReceiver extends BroadcastReceiver {
         context.startService(intent);
     }
 
-    //start Data and Call State Monitoring Service
-    private static void startDataAndCallStateMonitoringService(Context context) {
+    // start data connection service
+    private static void startDataConnectionService(Context context) {
+        Log.d(TAG, "Inside startDataConnectionService");
         DMHelper.subscribeForTimeAlert(context,
                 DMHelper.TIME_CHECK_STATUS_AFTER_STARTING_MONITORING_SERVICE);
-        Intent intent = new Intent(DMIntent.ACTION_START_STATE_MONITORING_SERVICE);
-        intent.setClass(context, DataAndCallStateMonitoringService.class);
+        Intent intent = new Intent(DMIntent.ACTION_START_DATA_CONNECTION_SERVICE);
+        intent.setClass(context, DMDataConnectionService.class);
         context.startService(intent);
+    }
+
+    // stop data connection service
+    private static void stopDataConnectionService(Context context) {
+        Log.d(TAG, "Inside stopDataConnectionService");
+        Intent intent = new Intent(DMIntent.ACTION_START_DATA_CONNECTION_SERVICE);
+        intent.setClass(context, DMDataConnectionService.class);
+        context.stopService(intent);
     }
 
     // Verify session result: if result is successful, clean all resources.
@@ -749,7 +719,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 DMHelper.postInformativeNotification_message2_fail(context);
             }
             ed.putInt(DMHelper.DM_UI_MODE_KEY, -1);
-            ed.commit();
+            ed.apply();
         }
 
         if (sessionResult == DMResult.SYNCML_DM_SUCCESS) {
@@ -795,7 +765,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         SharedPreferences p = context.getSharedPreferences(DMHelper.DM_PREFERENCES_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.putInt(DMHelper.STATE_KEY, state);
-        ed.commit();
+        ed.apply();
     }
 
     /**
@@ -824,7 +794,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         int numberOfSessionAttempts = p.getInt(DMHelper.DM_SESSION_ATTEMPTS_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.putInt(DMHelper.DM_SESSION_ATTEMPTS_KEY, (numberOfSessionAttempts + 1));
-        ed.commit();
+        ed.apply();
     }
 
     // check and initialize variables from preferences
@@ -881,31 +851,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
         }
     }
 
-    //apn state monitoring service
-    private static void startApnStateMonitoringService(Context context) {
-        Log.d(TAG, "Inside startApnStateMonitoringService");
-        //DMHelper.subscribeForTimeAlert(context, DMHelper.TIME_CHECK_STATUS_APN_STATE);
-        Intent intent = new Intent("com.android.omadm.service.apn_state_monitoring_service");
-        intent.setClass(context, ApnStateMonitoringService.class);
-        context.startService(intent);
-    }
-
-    //stop apn state monitoring service
-    private static void stopApnStateMonitoringService(Context context) {
-        Log.d(TAG, "Inside stopApnStateMonitoringService");
-        //DMHelper.subscribeForTimeAlert(context, DMHelper.TIME_CHECK_STATUS_APN_STATE);
-        Intent intent = new Intent("com.android.omadm.service.apn_state_monitoring_service");
-        intent.setClass(context, ApnStateMonitoringService.class);
-        context.stopService(intent);
-    }
-
     // set current state
     private static void setFotaApnState(Context context, int state) {
         Log.d(TAG, "setFotaApnState: " + state);
         SharedPreferences p = context.getSharedPreferences(DMHelper.FOTA_APN_PREFERENCE_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.putInt(DMHelper.FOTA_APN_STATE_KEY, state);
-        ed.commit();
+        ed.apply();
     }
 
     // get current state.
@@ -928,9 +880,8 @@ public class DMIntentReceiver extends BroadcastReceiver {
         if (result != -1) {
             Log.w(TAG, "stopUsingNetworkFeature result=" + result);
         }
-        stopApnStateMonitoringService(context);
+        stopDataConnectionService(context);
     }
-
 
     // Function which will send intents to start FDM
     private static void sendNotifyIntent(Context context) {
@@ -1075,10 +1026,10 @@ public class DMIntentReceiver extends BroadcastReceiver {
         if (!TextUtils.isEmpty(wMacAddr)) {
             ed.putString(WIFI_MAC_ADDR, wMacAddr);
         }
-        ed.commit();
+        ed.apply();
     }
 
-    private static final void logd(String msg) {
+    private static void logd(String msg) {
         Log.d(TAG, msg);
     }
 }

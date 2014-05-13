@@ -267,7 +267,7 @@ final class DMHelper {
         SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.clear();
-        ed.commit();
+        ed.apply();
 
         //remove file with message
         File file = new File(POSTPONED_DATA_PATH);
@@ -328,7 +328,7 @@ final class DMHelper {
                 FOTA_APN_PREFERENCE_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.clear();
-        ed.commit();
+        ed.apply();
 
         //remove file with message
         File file = new File(FOTA_APN_FILE_PATH);

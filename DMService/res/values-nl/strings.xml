@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Software-update</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Software annuleren</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s vraagt een klantenservicesessie via uw telefoon aan. Geopende apps worden mogelijk gesloten en mogelijk gelden normale gegevenstarieven. Nu verbinding maken?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s vraagt een klantenservicesessie via uw telefoon aan. Geopende apps worden mogelijk gesloten. Nu verbinding maken?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Er is een systeemupdate voor uw telefoon.\nDe installatie kan enkele minuten duren.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Systeemupdate is geannuleerd.\nU wordt later aan de update herinnerd.</string>
-    <string name="dm_alert_dlg_ok_text">OK</string>
-    <string name="dm_alert_dlg_cancel_text">Annuleren</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Apparaatbeheer</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Systeembericht</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>

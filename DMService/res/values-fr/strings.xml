@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Mise à jour du logiciel</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Annulation du logiciel</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s demande une session d\'assistance clientèle pour votre téléphone. Des applications ouvertes seront peut-être fermées et des débits normaux s\'appliqueront. Se connecter maintenant ?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s demande une session d\'assistance clientèle pour votre téléphone. Des applications ouvertes seront peut-être fermées. Se connecter maintenant ?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Une mise à jour système existe pour votre téléphone.\nSon installation peut prendre quelques minutes.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">La mise à jour système a été annulée.\nVous serez invité à installer la mise à jour ultérieurement.</string>
-    <string name="dm_alert_dlg_ok_text">"OK"</string>
-    <string name="dm_alert_dlg_cancel_text">"Annuler"</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Gestion des périphériques</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Message système</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">"OK"</string>

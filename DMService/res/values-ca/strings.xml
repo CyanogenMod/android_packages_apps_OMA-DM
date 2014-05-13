@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Actualització de programari</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Cancel·lació de programari</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s sol·licita una sessió d\'atenció al client al vostre telèfon. Pot ser que es tanquin les aplicacions obertes i que s\'apliquin les tarifes de dades normals. Voleu connectar-vos ara?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s sol·licita una sessió d\'atenció al client al vostre telèfon. Pot ser que es tanquin les aplicacions obertes. Voleu connectar-vos ara?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Hi ha una actualització del sistema per al vostre telèfon,\nque podria trigar una estona en instal·lar-se.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">S\'ha cancel·lat l\'actualització del sistema.\nSe us tornarà a preguntar si voleu instal·lar l\'actualització més endavant.</string>
-    <string name="dm_alert_dlg_ok_text">D\'acord</string>
-    <string name="dm_alert_dlg_cancel_text">Cancel·la</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Gestió de dispositius</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Missatge del sistema</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">D\'acord</string>

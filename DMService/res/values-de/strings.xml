@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Softwareupdate</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Software-Abbruch</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s fordert eine Kundendienstsitzung für Ihr Telefon an. Offene Anwendungen können geschlossen werden und es gelten die normalen Datengebühren. Verbindung jetzt herstellen?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s fordert eine Kundendienstsitzung für Ihr Telefon an. Offene Anwendungen können geschlossen werden. Verbindung jetzt herstellen?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Für Ihr Telefon ist ein Systemupdate verfügbar,\nderen Installation mehrere Minuten dauern kann.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Die Systemaktualisierung wurde abgebrochen.\nSie erhalten zu einem späteren Zeitpunkt eine erneute Aufforderung zur Aktualisierung.</string>
-    <string name="dm_alert_dlg_ok_text">"OK"</string>
-    <string name="dm_alert_dlg_cancel_text">"Abbrechen"</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Gerätemanagement</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Systemmeldung</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">"OK"</string>

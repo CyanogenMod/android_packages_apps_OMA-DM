@@ -43,36 +43,36 @@ DM_ENGINE_SRC_FILES:= $(foreach dir,$(DM_GLOBAL_SUBDIRS_A),$(wildcard $(LOCAL_PA
 DM_ENGINE_SRC_FILES:= $(subst $(LOCAL_PATH)/,,$(DM_ENGINE_SRC_FILES))
 DM_ENGINE_SRC_FILES += xpl/src/xpl_dm_Notifications.cpp 
 
-
+# DM Session source files
 DM_SESSION_SRC_FILES:= $(foreach dir,$(DM_GLOBAL_SUBDIRS_B),$(wildcard $(LOCAL_PATH)/$(dir)/*.*))
 DM_SESSION_SRC_FILES:= $(subst $(LOCAL_PATH)/,,$(DM_SESSION_SRC_FILES))
 
 # DM XPL source files
 DM_XPL_SRC_FILES := \
+  xpl/src/xpl_Alert.cc \
   xpl/src/xpl_File.cc \
+  xpl/src/xpl_Lib.cc \
   xpl/src/xpl_Memory.cc \
+  xpl/src/xpl_Regex.cc \
   xpl/src/xpl_Time.cc \
+  xpl/src/xpl_dm_Manager.cc \
+  xpl/src/xpl_dm_Notifications.cc \
+  xpl/src/dmAllocatedPointersPool.cc \
   xpl/src/dmMemory.cc \
+  xpl/src/dmNewDataTypesValidation.cc \
   xpl/src/dmThreadHelper.cc \
   xpl/src/dmThreadQueue.cc \
   xpl/src/dmprofile.cc \
-  xpl/src/xpl_Lib.cc \
-  xpl/src/xpl_Alert.cc \
-  xpl/src/xpl_dm_Manager.cc \
-  xpl/src/dmAllocatedPointersPool.cc \
-  xpl/src/xpl_dm_Notifications.cc \
-  xpl/src/xpl_Regex.cc \
-  xpl/src/dmNewDataTypesValidation.cc
 
 ifdef DM_NATIVE_HTTP
     DM_XPL_SRC_FILES += xpl/src/xpl_HTTP_socket.cc \
-						xpl/src/dmSocketConnector.cc
+                        xpl/src/dmSocketConnector.cc
 else
     DM_JNI_SRC_FILES:= jni/DMServiceConnection.cc  \
-	                       jni/DMServiceAlert.cc \
-		               jni/DMServiceMain.cc  \
-		                dmlib/dmengine/dm_transport/src/dm_tpt_utils.c \
-					   jni/DMTreeManager.cc
+                       jni/DMServiceAlert.cc \
+                       jni/DMServiceMain.cc  \
+                       dmlib/dmengine/dm_transport/src/dm_tpt_utils.c \
+                       jni/DMTreeManager.cc
     LOCAL_SRC_FILES += $(DM_JNI_SRC_FILES)
 endif
 
@@ -113,13 +113,12 @@ DM_CFLAGS :=  -DVRTXMC \
               -DDM_NO_SESSION_LIB \
               -DTNDS_SUPPORT
 
+# for old ARM platform builds
+#DM_ARM_CFLAGS := -DPLATFORM_EZX \
+#                 -DDMSyncMLLibVersion=\"03.00.00\"
 
-# for ARM builds
-DM_ARM_CFLAGS := -DPLATFORM_EZX \
-                 -DDMSyncMLLibVersion=\"03.00.00\" 
-
-# for x86 builds on android
-DM_X86_CFLAGS = -DEZX_PORT -DPLATFORM_X86 -DPLATFORM_ANDROID -DM_NO_REGEX \
+# for x86/ARM builds on Android
+DM_X86_CFLAGS = -DEZX_PORT -DPLATFORM_X86 -DPLATFORM_ANDROID \
                 -DSYNCML_DM_DBG_USING_XML \
                 -DDM_SUPPORT_AUTHPREF \
                 -DNO_CAF \
@@ -133,22 +132,21 @@ LOCAL_CFLAGS += $(DM_CFLAGS)
 LOCAL_CFLAGS += $(DM_X86_CFLAGS)
 
 ifdef FTR_OMADM_SDMSERVICES
-        LOCAL_CFLAGS += -DDM_SDMSERVICES
+LOCAL_CFLAGS += -DDM_SDMSERVICES
 endif
 
 ifdef DM_NATIVE_HTTP
-	LOCAL_CFLAGS += -DDM_NATIVE_HTTP
+LOCAL_CFLAGS += -DDM_NATIVE_HTTP
 endif
 
 ifeq ($(TARGET_BUILD_TYPE),release)
-	LOCAL_CFLAGS += -DDM_UNITEST
+LOCAL_CFLAGS += -DDM_UNITEST
 endif
 
 LOCAL_SHARED_LIBRARIES += \
-  libandroid_runtime \
-  libnativehelper \
-  libdl \
-  liblog 
+    libandroid_runtime \
+    liblog \
+    libdl
 
 LOCAL_MODULE := libdmengine
 LOCAL_PRELINK_MODULE := false

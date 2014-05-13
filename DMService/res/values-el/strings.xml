@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Ενημέρωση λογισμικού</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Ακύρωση λογισμικού</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s ζητά περίοδο λειτουργίας εξυπηρέτησης πελατών στο τηλέφωνό σας. Ενδέχεται να κλείσουν οι ανοιχτές εφαρμογές και να ισχύσουν κανονικές χρεώσεις δεδομένων. Θέλετε να συνδεθείτε τώρα;"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s ζητά περίοδο λειτουργίας εξυπηρέτησης πελατών στο τηλέφωνό σας. Ενδέχεται να κλείσουν οι ανοιχτές εφαρμογές. Θέλετε να συνδεθείτε τώρα;</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Υπάρχει ενημέρωση συστήματος για το τηλέφωνό σας\nκαι μπορεί να χρειαστούν μερικά λεπτά για την εγκατάστασή της.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Η ενημέρωση συστήματος ακυρώθηκε.\nΑργότερα, θα ειδοποιηθείτε ξανά για την ενημέρωση.</string>
-    <string name="dm_alert_dlg_ok_text">"OK"</string>
-    <string name="dm_alert_dlg_cancel_text">"Άκυρο"</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Διαχείριση συσκευών</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Μήνυμα συστήματος</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">"OK"</string>

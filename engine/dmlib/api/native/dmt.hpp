@@ -46,6 +46,5 @@ The dmt.hpp header file contains External API for DMTree C++ API
 #include "dmtSessionProp.hpp"
 #include "dmtEvent.hpp"
 #include "dmtEventData.hpp"
-#include "dmtErrorDescription.hpp"
 
 #endif

@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Programinės įrangos naujinys</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Programinės įrangos atšaukimas</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s prašo kliento aptarnavimo seanso jūsų telefone. Gali būti uždarytos atidarytos programos ir taikoma įprasta duomenų perdavimo sparta. Ar prisijungti?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s prašo kliento aptarnavimo seanso jūsų telefone. Gali būti uždarytos atidarytos programos. Ar prisijungti?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Jūsų telefonui yra sistemos naujinys,\nkuriam įdiegti gali reikėti iki kelių minučių.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Sistemos atnaujinimas atšauktas.\nVėliau dar kartą bus pasiūlyta įdiegti naujinį.</string>
-    <string name="dm_alert_dlg_ok_text">Gerai</string>
-    <string name="dm_alert_dlg_cancel_text">Atšaukti</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Įrenginių tvarkytuvė</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Sistemos pranešimas</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">Gerai</string>

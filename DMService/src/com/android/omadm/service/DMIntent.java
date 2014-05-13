@@ -53,13 +53,11 @@ public interface DMIntent {
     // for UI mode Informative management action
     String ACTION_CLOSE_NOTIFICATION_INFO = "com.android.omadm.service.close_notification_info";
 
-    // for starting Data and Call State Monitoring Service
-    String ACTION_START_STATE_MONITORING_SERVICE
-            = "com.android.omadm.service.data_and_call_state_monitoring_service";
+    // for waiting for Wi-Fi or waiting for mobile data and then bringing up the FOTA APN
+    String ACTION_START_DATA_CONNECTION_SERVICE = "com.android.omadm.service.StartDataConnection";
 
-    // for starting Data and Call State Monitoring Service
-    String ACTION_CALL_AND_DATA_STATE_READY
-            = "com.android.omadm.service.call_and_data_state_ready";
+    // data connection was successfully started
+    String ACTION_DATA_CONNECTION_READY = "com.android.omadm.service.DataConnectionReady";
 
     // user from UI confirmed starting DM session
     String ACTION_USER_CONFIRMED_DM_SESSION
@@ -75,9 +73,6 @@ public interface DMIntent {
     // start client initiated provisioning request
     String ACTION_CLIENT_INITIATED_FOTA_SESSION
             = "com.android.omadm.service.client_initiated_fota";
-
-    String ACTION_APN_STATE_ACTIVE_READY
-            = "com.android.omadm.service.apn_state_active";
 
     // set server hostname info
     String ACTION_SET_SERVER_CONFIG = "com.android.omadm.service.set_server_config";

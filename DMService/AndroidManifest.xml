@@ -64,21 +64,8 @@
         </service>
 
         <service
-                android:name=".DataAndCallStateMonitoringService"
+                android:name=".DMDataConnectionService"
                 android:exported="false">
-            <intent-filter>
-                <action
-                        android:name="com.android.omadm.service.data_and_call_state_monitoring_service"/>
-            </intent-filter>
-        </service>
-
-        <service
-                android:name=".ApnStateMonitoringService"
-                android:exported="false">
-            <intent-filter>
-                <action
-                        android:name="com.android.omadm.service.apn_state_monitoring_service"/>
-            </intent-filter>
         </service>
 
         <service

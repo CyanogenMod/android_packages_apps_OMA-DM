@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Softwareopdatering</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Annuller software</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s anmoder om en kundeservicesession på din telefon. Åbne applikationer lukkes muligvis, og der opkræves muligvis normale datapriser. Vil du oprette forbindelse nu?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s anmoder om en kundeservicesession på din telefon. Åbne applikationer lukkes muligvis. Vil du oprette forbindelse nu?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Der er en systemopdatering for din telefon,\nder kan tage adskillige minutter at installere.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Systemopdatering er blevet annulleret.\nDu vil blive spurgt igen senere.</string>
-    <string name="dm_alert_dlg_ok_text">OK</string>
-    <string name="dm_alert_dlg_cancel_text">Annuller</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Enhedshåndtering</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Systembesked</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>

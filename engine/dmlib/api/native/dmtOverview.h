@@ -58,7 +58,6 @@
 -# DMVector <em>Simple Collection Class without overhead of STL or QT DMVector template class is similar to Java's ArrayList </em>
 -# JemBaseObject <em> Base object for any ref-counted object </em>
 -# JemSmartPtr <em>Smart pointer; works with classes derived from JemBaseObject </em>
--# PDmtErrorDescription <em>This class is deprecated and kept here for backward compatibility and for encapsulation Device Management  Tree error retrieving</em>
 
 \subsection Structures 5.2 Structures
 

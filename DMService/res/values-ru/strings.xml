@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Обновление ПО</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Отмена ПО</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s запросил(а) сеанс общения со службой поддержки по телефону. Это может привести к закрытию приложений. Восстановится стандартная скорость передачи данных. Подключиться?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s запросил(а) сеанс общения со службой поддержки по телефону. Это может привести к закрытию приложений. Подключиться?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Доступно обновление системы для вашего телефона,\nустановка которого может занять несколько минут.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Системное обновление отменено.\nЗапрос на выполнение обновления будет отображен позже.</string>
-    <string name="dm_alert_dlg_ok_text">ОК</string>
-    <string name="dm_alert_dlg_cancel_text">Отмена</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Управление устройством</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Системное сообщение</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">ОК</string>

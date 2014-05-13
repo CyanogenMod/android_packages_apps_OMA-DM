@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">ソフトウェアのアップデート</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">ソフトウェアのキャンセル</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s が電話のカスタマーケア セッションをリクエストしています。オープンしているアプリケーションがクローズされ、通常のデータレートが適用される可能性があります。今すぐ接続しますか？"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s が電話のカスタマーケア セッションをリクエストしています。オープンしているアプリケーションがクローズされることがあります。今すぐ接続しますか？</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">ご使用の電話にシステムアップデートがあります。\nインストールには数分かかることがあります。</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">システムアップデートがキャンセルされました。\n後ほどまたアップデートが催促されます。</string>
-    <string name="dm_alert_dlg_ok_text">OK</string>
-    <string name="dm_alert_dlg_cancel_text">キャンセル</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">デバイス管理</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">システムメッセージ</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">OK</string>

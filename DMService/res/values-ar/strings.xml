@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">خدمة DM</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">تحديث البرنامج</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">إلغاء البرنامج</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">يطلب %s جلسة خدمة عملاء لهاتفك. قد يتم غلق التطبيقات المفتوحة وقد يتم تطبيق معدلات البيانات العادية. هل تريد الاتصال الآن؟"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">يطلب %s جلسة خدمة عملاء لهاتفك. قد يتم غلق التطبيقات المفتوحة. هل تريد الاتصال الآن؟</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">يوجد تحديث للنظام بهاتفك،\nوالذي قد يستغرق بضع دقائق لتثبيته.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">تم إلغاء تحديث النظام.\nسوف يُطلب منك إجراء التحديث مرة أخرى لاحقًا.</string>
-    <string name="dm_alert_dlg_ok_text">موافق</string>
-    <string name="dm_alert_dlg_cancel_text">إلغاء</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">إدارة الجهاز</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">رسالة النظام</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">موافق</string>

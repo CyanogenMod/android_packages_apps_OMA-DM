@@ -2,14 +2,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">DMService</string>
-    <string name="PMF_RESOURCE_ID_TITLE_SYSTEM_UPDATE">Atjaunināt programmatūru</string>
-    <string name="PMF_RESOURCE_ID_TITLE_UPDATE_CANCEL">Atcelt programmatūru</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE1">%s pieprasa klientu apkalpošanas sesiju jūsu tālrunim. Iespējams, tiks aizvērtas atvērtās lietojumprogrammas un piemērota parasta samaksa par datu pārraidi. Vai izveidot savienojumu tūlīt?"</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE2">%s pieprasa klientu apkalpošanas sesiju jūsu tālrunim. Iespējams, tiks aizvērtas atvērtās lietojumprogrammas. Vai izveidot savienojumu tūlīt?</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_NOTICE">Jūsu tālrunim ir pieejams sistēmas atjauninājums,\nkura instalēšana var aizņemt dažas minūtes.</string>
-    <string name="PMF_RESOURCE_ID_CONTEXT_SYSTEM_UPDATE_CANCEL">Sistēmas atjaunināšana ir atcelta.\nVēlāk jums atkal tiks piedāvāts veikt atjaunināšanu.</string>
-    <string name="dm_alert_dlg_ok_text">Labi</string>
-    <string name="dm_alert_dlg_cancel_text">Atcelt</string>
     <string name="DM_SERVICE_ALERT_TITLE_DEVICE_MGMT">Ierīču pārvaldība</string>
     <string name="DM_SERVICE_ALERT_TITLE_SYSTEM_MESSAGE">Sistēmas ziņojums</string>
     <string name="DM_SERVICE_ALERT_BUTTON_YES">Labi</string>
