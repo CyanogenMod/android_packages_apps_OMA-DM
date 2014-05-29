@@ -43,9 +43,7 @@ LOCAL_CFLAGS += $(DM_CFLAGS)
 LOCAL_SHARED_LIBRARIES += \
   liblog \
   libdmengine \
-  libdvm \
   libandroid_runtime \
-#  libdl \
   libnativehelper
 
 LOCAL_MODULE := libdmjavaplugin
