@@ -230,25 +230,28 @@ class DMSession {
 
         int maxNum = 0;
         String[] files = dirs.list(filter);
-        for (String f : files) {
-            String digitalStr = f.substring(7, 8);
-            try {
-                int number = Integer.parseInt(digitalStr);
-                if (number > maxNum) {
-                    maxNum = number;
+
+        if(files != null) {
+            for (String f : files) {
+                String digitalStr = f.substring(7, 8);
+                try {
+                    int number = Integer.parseInt(digitalStr);
+                    if (number > maxNum) {
+                        maxNum = number;
+                    }
+
+                } catch (NumberFormatException e) {
+                    loge("NumberFormatException in prepareLogFile()", e);
                 }
-
-            } catch (NumberFormatException e) {
-                loge("NumberFormatException in prepareLogFile()", e);
             }
+            maxNum++;
         }
-        maxNum++;
 
-        if (maxNum >= 10) {
+        if (files == null || maxNum >= 10) {
             // FIXME: check return value
             dirs.delete();
             // FIXME: check return value
-            dirs.mkdir();
+            dirs.mkdirs();
             maxNum = 1;
         }
 
