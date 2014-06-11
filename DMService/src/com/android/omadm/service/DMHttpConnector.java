@@ -127,16 +127,13 @@ public class DMHttpConnector {
     public int sendRequest(String url, byte[] requestData, String hmacValue) {
         if (!mIsFotaChannelAvailable) {
             if (isDataNetworkLteOrCdma() && !isWifiConnected() && isPhoneTypeLTE()) {
-                if (!requestRouteAvailable(url)) {
-                    loge("Failed to route traffic via fota apn");
-                    return HttpURLConnection.HTTP_PRECON_FAILED;
-                } else {
-                    mIsFotaChannelAvailable = true;
-                }
+                requestRouteAvailable(url);
+                mIsFotaChannelAvailable = true;
             } else {
                 logd("NW type is not LTE/eHRPD or not a 4G device");
             }
         } else {
+            requestRouteAvailable(url);
             logd("fota data channel already enabled");
         }
 
@@ -235,6 +232,7 @@ public class DMHttpConnector {
         try {
             if (connection != null) {
                 Log.e(TAG, "overwriting old mConnection!");
+                mConnection.disconnect();
             }
 
             url = new URL(urlString);
@@ -255,6 +253,7 @@ public class DMHttpConnector {
                 connection = (HttpURLConnection) url.openConnection();
             }
             mConnection = connection;
+
         } catch (Exception e) {
             Log.e(TAG, "bad URL", e);
             return DMResult.SYNCML_DM_INVALID_URI;
