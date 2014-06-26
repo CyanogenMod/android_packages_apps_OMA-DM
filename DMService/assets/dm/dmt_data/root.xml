@@ -282,5 +282,32 @@
     </DFProperties>
      <Type>text/plain</Type>
    </Node>
+
+   <Node>
+    <NodeName>RemoteCommands</NodeName>
+    <DFProperties>
+     <DFFormat>
+      <node/>
+     </DFFormat>
+     <AccessType>
+      <Get/>
+     </AccessType>
+    </DFProperties>
+     <Type>text/plain</Type>
+
+    <Node>
+     <NodeName>Command</NodeName>
+     <DFProperties>
+      <DFFormat>
+       <chr/>
+      </DFFormat>
+      <AccessType>
+       <Get/>
+       <Exec/>
+      </AccessType>
+     </DFProperties>
+      <Type>text/plain</Type>
+    </Node>
+   </Node>
   </Node>
 </MgmtTree>

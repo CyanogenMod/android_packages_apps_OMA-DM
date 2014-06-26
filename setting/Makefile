@@ -1,4 +1,4 @@
-DM_ROOT     := $(ANDROID_ROOT)/vendor/moto/common/OMA-DM
+DM_ROOT     := $(ANDROID_ROOT)/packages/apps/OMA-DM
 DM_ENGINE   := $(DM_ROOT)/engine
 DM_SERVICE  := $(DM_ROOT)/DMService
 DM_SETTING  := $(DM_ROOT)/setting

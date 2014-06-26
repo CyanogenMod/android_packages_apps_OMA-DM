@@ -5396,6 +5396,43 @@
     </Node>
    </Node>
    <Node>
+    <NodeName>RemoteCommands</NodeName>
+    <Path>.</Path>
+    <DFProperties>
+     <AccessType>
+      <Get/>
+     </AccessType>
+     <DFFormat>
+      <node/>
+     </DFFormat>
+     <DFType>
+      <MIME>text/plain</MIME>
+     </DFType>
+     <CaseSense>
+      <CS/>
+     </CaseSense>
+    </DFProperties>
+    <Node>
+     <NodeName>Command</NodeName>
+     <Path>./RemoteCommands</Path>
+     <DFProperties>
+      <AccessType>
+       <Exec/>
+       <Get/>
+      </AccessType>
+      <DFFormat>
+       <chr/>
+      </DFFormat>
+      <DFType>
+       <MIME>text/plain</MIME>
+      </DFType>
+      <CaseSense>
+       <CS/>
+      </CaseSense>
+     </DFProperties>
+    </Node>
+   </Node>
+   <Node>
     <NodeName>SIM</NodeName>
     <Path>.</Path>
     <DFProperties>

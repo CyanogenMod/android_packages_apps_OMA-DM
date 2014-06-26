@@ -1035,6 +1035,13 @@ type:chr
 maxLen:31
 access:Get
 mime:text/plain
+[/RemoteCommands]
+type:node
+access:Get
+[/RemoteCommands/Command]
+type:chr
+access:Get,Exec
+mime:text/plain
 [/SIM]
 type:node
 access:Get
