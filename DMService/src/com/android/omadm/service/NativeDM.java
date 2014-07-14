@@ -207,6 +207,19 @@ final class NativeDM {
      */
     public static native String parseBootstrapServerId(byte[] msgData, boolean bIsWbxml);
 
+    /**
+     * Get the node type for a DM node.
+     * @param path the OMA DM path to use
+     * @return the DM node type
+     */
+    public static native int getNodeType(String path);
+
+    /**
+     * Get the node value for a DM node.
+     * @param path the OMA DM path to use
+     * @return the DM node value, as a String
+     */
+    public static native String getNodeValue(String path);
 
     private static void logd(String msg) {
         Log.d(TAG, msg);

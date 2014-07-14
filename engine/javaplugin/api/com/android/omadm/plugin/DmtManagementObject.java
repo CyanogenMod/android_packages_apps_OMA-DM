@@ -143,19 +143,11 @@ public abstract class DmtManagementObject implements IDmtSubTree {
             return ErrorCodes.SYNCML_DM_INVALID_URI;
         }
 
-        ArrayList<String> children;
         try {
-            children = rootNode.getValue().getNodeValue();
+            rootNode.getValue().addChildNode(nodeName, new DmtData());
         } catch (DmtException e) {
             return e.getCode();
         }
-
-        if (children == null) {
-            children = new ArrayList<String>();
-        }
-        children.add(nodeName);
-
-        rootNode.setValue(new DmtData(children));
 
         return ErrorCodes.SYNCML_DM_SUCCESS;
     }
@@ -215,16 +207,18 @@ public abstract class DmtManagementObject implements IDmtSubTree {
         }
 
         /* Remove the node name from root node's list */
-        ArrayList<String> children;
+        Map<String, DmtData> children;
         try {
-            children = rootNode.getValue().getNodeValue();
+            children = rootNode.getValue().getChildNodeMap();
         } catch (DmtException e) {
             return e.getCode();
         }
 
-        if (children == null || !children.remove(data[1])) {
+        if (children == null) {
             return ErrorCodes.SYNCML_DM_TREE_CORRUPT;
         }
+
+        children.remove(data[1]);
 
         /*
          * Since getNodeValue() returns reference to
@@ -249,31 +243,6 @@ public abstract class DmtManagementObject implements IDmtSubTree {
         }
 
         return ErrorCodes.SYNCML_DM_SUCCESS;
-    }
-
-    /**
-     * Returns the first sub node name for the interior node specified by path.
-     *
-     * @param path full path to the node.
-     * @return node name.
-     * @throws DmtException in case of any error.
-     */
-    protected final String getFirstSubNodeName(String path) throws DmtException {
-        if (!DmtPathUtils.isValidPath(path)) {
-            throw new DmtException("Invalid path");
-        }
-
-        DmtData data = getNodeValue(path);
-        if (data == null || data.getType() != DmtData.NODE) {
-            throw new DmtException("Cannot obtain data for such path");
-        }
-
-        ArrayList<String> subNodeNames = data.getNodeValue();
-        if (subNodeNames == null || subNodeNames.isEmpty()) {
-            throw new DmtException("There are no subnodes");
-        }
-
-        return subNodeNames.get(0);
     }
 
     /**

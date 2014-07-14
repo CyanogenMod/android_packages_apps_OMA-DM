@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <android_runtime/AndroidRuntime.h>
 #include "utils/Log.h"
 #include "DMServiceMain.h"
@@ -9,84 +25,91 @@ extern "C" {
 #include "xltdec.h"
 }
 
-#define RESULT_BUF_SIZE 8192 /*2048*/
+static const int RESULT_BUF_SIZE = 8192; /*2048*/
 
-static PDmtTree ptrTree=NULL;
-static DMString s_strRootPath = "";
-static PDmtErrorDescription e;
+// FIXME: get rid of these static variables!
+static PDmtTree ptrTree = NULL;
+static DMString s_strRootPath;
 static DmtPrincipal principal("localhost");
 static bool bShowTimestamp = false;
 
-
-static void Open( const char * szNode);
 static PDmtTree GetTree();
-static void PrintNode( PDmtNode ptrNode );
-static void DumpSubTree( PDmtNode ptrNode );
+static SYNCML_DM_RET_STATUS_T PrintNode(PDmtNode ptrNode);
+static void DumpSubTree(PDmtNode ptrNode);
 
 static char resultBuf[RESULT_BUF_SIZE];
 static void strcatEx(const char * format, ...)
 {
-    if (!format){
+    if (!format) {
         return;
     }
 
     int len = strlen(resultBuf);
-    if(len < RESULT_BUF_SIZE - 1){
+    if (len < RESULT_BUF_SIZE - 1) {
         va_list args;
-        va_start (args, format);
-        int ret = vsnprintf (&resultBuf[len], RESULT_BUF_SIZE - len - 1, format, args);
-        if(ret == -1){
+        va_start(args, format);
+        int ret = vsnprintf(&resultBuf[len], RESULT_BUF_SIZE - len - 1, format, args);
+        if (ret == -1) {
             resultBuf[RESULT_BUF_SIZE - 1] = 0x0;
         }
-        va_end (args);
+        va_end(args);
     }
 }
 
-static  PDmtNode GetNode( const char*  szNodeName )
+static PDmtNode GetNode(const DMString& strNodeName)
 {
     PDmtNode ptrNode;
     GetTree();
 
-    if ( ptrTree != NULL ){
-        if ( (e=ptrTree->GetNode( szNodeName, ptrNode)) != NULL ) {
-            strcatEx("can't get node %s", szNodeName);
+    if (ptrTree) {
+        if (ptrTree->GetNode(strNodeName, ptrNode) != SYNCML_DM_SUCCESS) {
+            strcatEx("can't get node %s", strNodeName.c_str());
         }
     }
 
     return ptrNode;
 }
 
-JNIEXPORT jstring JNICALL setStringNode(JNIEnv *jenv,
-        jclass jclz, jstring nodePath, jstring value)
+JNIEXPORT jstring JNICALL setStringNode(JNIEnv* jenv, jclass, jstring nodePath, jstring value)
 {
-    const char* szNode = jenv->GetStringUTFChars(nodePath, NULL);
+    resultBuf[0] = 0x0;
+
+    const char* szNodePath = jenv->GetStringUTFChars(nodePath, NULL);
     const char* szValue = jenv->GetStringUTFChars(value, NULL);
 
-    resultBuf[0] = 0x0;
-    PDmtNode ptrNode = GetNode(szNode);
-    if (ptrNode == NULL) {
+    DMString strNodePath(szNodePath);
+    DMString strValue(szValue);
+
+    jenv->ReleaseStringUTFChars(nodePath, szNodePath);
+    jenv->ReleaseStringUTFChars(value, szValue);
+
+    PDmtNode ptrNode = GetNode(strNodePath);
+    if (!ptrNode) {
         goto end;
     }
 
-    if ( (e=ptrNode->SetStringValue(szValue)) == NULL ) {
-        strcatEx("set value of node %s to %s successfully\n", szNode, szValue);
+    if (ptrNode->SetStringValue(strValue) == SYNCML_DM_SUCCESS) {
+        strcatEx("set value of node %s to %s successfully\n", strNodePath.c_str(), strValue.c_str());
         PrintNode(ptrNode);
     } else {
-        strcatEx("can't set value of node %s to %s", szNode, szValue);
+        strcatEx("can't set value of node %s to %s", strNodePath.c_str(), strValue.c_str());
     }
+
 end:
     jstring ret = jenv->NewStringUTF(resultBuf);
     return ret;
 }
 
-JNIEXPORT jstring JNICALL getNodeInfo(JNIEnv *jenv, jclass clz, jstring jszNode)
+JNIEXPORT jstring JNICALL getNodeInfo(JNIEnv* jenv, jclass, jstring jszNode)
 {
     resultBuf[0] = 0x0;
-    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
-    PDmtNode ptrNode = GetNode( szNode );
 
-    if ( ptrNode != NULL )
-    {
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    PDmtNode ptrNode = GetNode(strNode);
+    if (ptrNode) {
         PrintNode(ptrNode);
     }
 
@@ -94,221 +117,285 @@ JNIEXPORT jstring JNICALL getNodeInfo(JNIEnv *jenv, jclass clz, jstring jszNode)
     return ret;
 }
 
-JNIEXPORT jstring JNICALL executePlugin(JNIEnv *jenv, jclass clz,
-        jstring jszNode, jstring jszData)
+JNIEXPORT jint JNICALL getNodeType(JNIEnv* jenv, jclass, jstring jszNode)
 {
     const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
-    const char* szData = jenv->GetStringUTFChars(jszData, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    PDmtNode ptrNode = GetNode(strNode);
+    if (ptrNode && !ptrNode->IsExternalStorageNode())
+    {
+        DmtData oData;
+        LOGD("Enter get value...\n");
+        SYNCML_DM_RET_STATUS_T ret = ptrNode->GetValue(oData);
+        if (ret != SYNCML_DM_SUCCESS) {
+            LOGD("Value is null");
+            return 0;   // return NULL type on error
+        }
+        return oData.GetType();
+    }
+
+    return 0;   // return NULL type on error
+}
+
+JNIEXPORT jstring JNICALL getNodeValue(JNIEnv* jenv, jclass, jstring jszNode)
+{
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    PDmtNode ptrNode = GetNode(strNode);
+    if (ptrNode && !ptrNode->IsExternalStorageNode())
+    {
+        LOGD("Enter get value...\n");
+        DmtData oData;
+        DMString value;
+
+        if (!ptrNode->IsLeaf()) {
+            SYNCML_DM_RET_STATUS_T ret = ptrNode->GetValue(oData);
+            if (ret != SYNCML_DM_SUCCESS) {
+                LOGE("can't get child nodes");
+                return NULL;    // return NULL reference on error
+            }
+            DMStringVector aChildren;
+            ret = oData.GetNodeValue(aChildren);
+            if (ret != SYNCML_DM_SUCCESS) {
+                LOGE("oData.getNodeValue() failed");
+                return NULL;    // return NULL reference on error
+            }
+            UINT32 childLength = aChildren.size();
+            for (UINT32 i = 0; i < childLength; ++i) {
+                if (i != 0) {
+                    value += '|';
+                }
+                value += aChildren[i];
+            }
+        }
+        else
+        {
+            SYNCML_DM_RET_STATUS_T ret = ptrNode->GetValue(oData);
+            if (ret != SYNCML_DM_SUCCESS) {
+                LOGE("Value is null");
+                return NULL;   // return NULL reference on error
+            }
+            if (oData.GetString(value) != SYNCML_DM_SUCCESS) {
+                LOGE("oData.GetString() failed");
+                return NULL;   // return NULL reference on error
+            }
+        }
+
+        return jenv->NewStringUTF(value.c_str());
+    }
+
+    return NULL;    // return NULL reference on error
+}
+
+JNIEXPORT jstring JNICALL executePlugin(JNIEnv* jenv, jclass, jstring jszNode, jstring jszData)
+{
     resultBuf[0] = 0x0;
 
-    PDmtNode ptrNode = GetNode(szNode);
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
 
-    if (ptrNode != NULL) {
+    const char* szData = jenv->GetStringUTFChars(jszData, NULL);
+    DMString strData(szData);
+    jenv->ReleaseStringUTFChars(jszData, szData);
+
+    PDmtNode ptrNode = GetNode(strNode);
+    if (ptrNode) {
         DMString strResult;
-        if ( (e=ptrNode->Execute(szData, strResult)) == NULL ) {
-            strcatEx("execute node %s successfully, result=%s\n",
-                    szNode, strResult.c_str() );
+        if (ptrNode->Execute(strData, strResult) == SYNCML_DM_SUCCESS) {
+            strcatEx("execute node %s successfully, result=%s\n", strNode.c_str(), strResult.c_str());
         } else {
-            strcatEx("can't execute node %s", szNode);
+            strcatEx("can't execute node %s", strNode.c_str());
         }
     }
-    jstring ret = jenv->NewStringUTF(resultBuf);
 
+    jstring ret = jenv->NewStringUTF(resultBuf);
     return ret;
 }
 
-JNIEXPORT jstring JNICALL dumpTree(JNIEnv *jenv, jclass clz, jstring jszNode)
+JNIEXPORT jstring JNICALL dumpTree(JNIEnv *jenv, jclass, jstring jszNode)
 {
-    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
     resultBuf[0] = 0x0;
 
-    PDmtNode ptrNode = GetNode( szNode );
-    if ( ptrNode != NULL  ) {
-        DumpSubTree( ptrNode );
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    PDmtNode ptrNode = GetNode(strNode);
+    if (ptrNode) {
+        DumpSubTree(ptrNode);
     }
 
     jstring ret = jenv->NewStringUTF(resultBuf);
     return ret;
 }
 
-JNIEXPORT jint JNICALL createInterior(JNIEnv *jenv, jclass clz, jstring jszNode)
+JNIEXPORT jint JNICALL createInterior(JNIEnv *jenv, jclass, jstring jszNode)
 {
-    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
-    PDmtNode ptrNode;
     GetTree();
-
-    if ( ptrTree == NULL ) {
-        return SYNCML_DM_FAIL;
+    if (!ptrTree) {
+        return static_cast<jint>(SYNCML_DM_FAIL);
     }
 
-    if ( (e=ptrTree->CreateInteriorNode( szNode, ptrNode )) == NULL ) {
-        LOGI( "node %s created successfully\n", szNode );
-        jenv->ReleaseStringUTFChars(jszNode, szNode);
-        return SYNCML_DM_SUCCESS;
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    PDmtNode ptrNode;
+    SYNCML_DM_RET_STATUS_T ret = ptrTree->CreateInteriorNode(strNode, ptrNode);
+    if (ret == SYNCML_DM_SUCCESS) {
+        LOGI("node %s created successfully\n", strNode.c_str());
     } else {
-        LOGE("can't create a node %s", szNode);
-        jenv->ReleaseStringUTFChars(jszNode, szNode);
-        return SYNCML_DM_FAIL;
+        LOGE("can't create node %s", strNode.c_str());
     }
+    return static_cast<jint>(ret);
 }
 
-JNIEXPORT jint JNICALL createLeaf( JNIEnv *jenv, jclass clz, jstring jszNode, jstring jszData )
+JNIEXPORT jint JNICALL createLeaf(JNIEnv *jenv, jclass, jstring jszNode, jstring jszData)
 {
-    if(jszNode == NULL){
-        return SYNCML_DM_FAIL;
+    if (jszNode == NULL) {
+        return static_cast<jint>(SYNCML_DM_FAIL);
     }
 
-    const char *szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    GetTree();
+    if (!ptrTree) {
+        return static_cast<jint>(SYNCML_DM_FAIL);
+    }
 
-    const char *szData = "";
-    if(jszData != NULL){
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    const char* szData = NULL;
+
+    if (jszData != NULL) {
         szData = jenv->GetStringUTFChars(jszData, NULL);
     }
 
-    //LOGE("node=%s, szData=0x%X, 0x%X\n", szNode, szData[0], szData[1]);
-
     PDmtNode ptrNode;
-    GetTree();
-
-    if ( ptrTree == NULL ) {
-        return SYNCML_DM_FAIL;
-    }
-
-    if ((e=ptrTree->CreateLeafNode( szNode, ptrNode, DmtData( szData ))) == NULL ) {
-        LOGI( "node %s (%s) created successfully\n", szNode, szData );
-        jenv->ReleaseStringUTFChars(jszNode, szNode);
-        if(jszData!=NULL){
-            jenv->ReleaseStringUTFChars(jszData, szData);
-        }
-        return SYNCML_DM_SUCCESS;
+    SYNCML_DM_RET_STATUS_T ret = ptrTree->CreateLeafNode(szNode, ptrNode, DmtData(szData));
+    if (ret == SYNCML_DM_SUCCESS) {
+        LOGI("node %s (%s) created successfully\n", szNode, szData);
     } else {
-        LOGE("can't create a node %s", szNode);
-        jenv->ReleaseStringUTFChars(jszNode, szNode);
-        if(jszData!=NULL){
-            jenv->ReleaseStringUTFChars(jszData, szData);
-        }
-        return SYNCML_DM_FAIL;
+        LOGE("can't create node %s", szNode);
     }
+
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+    jenv->ReleaseStringUTFChars(jszData, szData);
+
+    return static_cast<jint>(ret);
 }
 
-JNIEXPORT jint JNICALL createLeafByte( JNIEnv *jenv, jclass clz, jstring jszNode, jbyteArray bDataArray)
+JNIEXPORT jint JNICALL createLeafByte(JNIEnv *jenv, jclass, jstring jszNode, jbyteArray bDataArray)
 {
-    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
-    jbyte* jData = (jbyte*)jenv->GetByteArrayElements(bDataArray, NULL);
-    jsize arraySize = jenv->GetArrayLength(bDataArray);
-
-    char* pData = (char*)DmAllocMem(arraySize+1);
-    memcpy(pData, jData, arraySize);
-    pData[arraySize] = '\0';
-
-    PDmtNode ptrNode;
     GetTree();
+    if (!ptrTree) {
+        return static_cast<jint>(SYNCML_DM_FAIL);
+    }
 
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    jbyte* jData = reinterpret_cast<jbyte*>(jenv->GetByteArrayElements(bDataArray, NULL));
+    jsize arraySize = jenv->GetArrayLength(bDataArray);
+    DmtData dmtData(reinterpret_cast<const UINT8*>(jData), static_cast<size_t>(arraySize));
     jenv->ReleaseByteArrayElements(bDataArray, jData, 0);
 
-    if ( ptrTree == NULL ) {
-        DmFreeMem(pData);
-        return SYNCML_DM_FAIL;
-    }
+    LOGI("NodePath=%s, Byte Data (%u bytes)\n", strNode.c_str(), arraySize);
 
-    LOGI("NodePath=%s,Byte Data=0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X\n", szNode, pData[0], pData[1], pData[2], pData[3], pData[4], pData[5], pData[6]);
-    if ((e=ptrTree->CreateLeafNode( szNode, ptrNode, DmtData( pData ))) == NULL ) {
-        DmFreeMem(pData);
-        LOGI( "node %s created successfully\n", szNode);
-        return SYNCML_DM_SUCCESS;
+    PDmtNode ptrNode;
+    SYNCML_DM_RET_STATUS_T ret = ptrTree->CreateLeafNode(strNode, ptrNode, dmtData);
+    if (ret == SYNCML_DM_SUCCESS) {
+        LOGI("node %s created successfully\n", strNode.c_str());
     } else {
-        DmFreeMem(pData);
-        LOGE("can't create a node %s", szNode);
-        return SYNCML_DM_FAIL;
+        LOGE("can't create node %s", strNode.c_str());
     }
+    return static_cast<jint>(ret);
 }
 
-JNIEXPORT jint JNICALL deleteNode(JNIEnv *jenv, jclass clz, jstring jszNode )
+JNIEXPORT jint JNICALL deleteNode(JNIEnv *jenv, jclass, jstring jszNode)
 {
-    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
     GetTree();
-    if ( ptrTree == NULL ) {
-        return SYNCML_DM_FAIL;
+    if (!ptrTree) {
+        return static_cast<jint>(SYNCML_DM_FAIL);
     }
 
-    if ( (e=ptrTree->DeleteNode( szNode )) == NULL ) {
-        LOGI( "node %s deleted successfully\n", szNode );
-        return SYNCML_DM_SUCCESS;
+    const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
+    DMString strNode(szNode);
+    jenv->ReleaseStringUTFChars(jszNode, szNode);
+
+    SYNCML_DM_RET_STATUS_T ret = ptrTree->DeleteNode(strNode);
+    if (ret == SYNCML_DM_SUCCESS) {
+        LOGI("node %s deleted successfully\n", strNode.c_str());
     } else {
-        LOGE("can't delete node %s", szNode);
-        return SYNCML_DM_FAIL;
+        LOGE("can't delete node %s", strNode.c_str());
     }
-}
-
-
-static void Open( const char * szNode)
-{
-    if ( strcmp(szNode, ".") == 0) {
-        s_strRootPath = "";
-    } else {
-        s_strRootPath = szNode;
-    }
-    ptrTree = NULL;
-    LOGV("Open tree: %s\n", s_strRootPath.c_str());
+    return static_cast<jint>(ret);
 }
 
 static PDmtTree GetTree()
 {
-    if (ptrTree != NULL) return ptrTree;
+    if (ptrTree) return ptrTree;
 
-    if ( (e=DmtTreeFactory::GetSubtree(principal, s_strRootPath.c_str(), ptrTree)) != NULL ) {
+    if (DmtTreeFactory::GetSubtree(principal, s_strRootPath, ptrTree) != SYNCML_DM_SUCCESS) {
         strcatEx("Can't get tree '%s'.", s_strRootPath.c_str());
     }
 
     return ptrTree;
 }
 
-static void DumpSubTree( PDmtNode ptrNode )
+static void DumpSubTree(PDmtNode ptrNode)
 {
-    PrintNode(ptrNode);
+    SYNCML_DM_RET_STATUS_T ret = PrintNode(ptrNode);
     strcatEx("\n");
-    if ( e != NULL ) return;
+    if (ret != SYNCML_DM_SUCCESS) return;
 
-    if ( !ptrNode->IsLeaf() ) {
+    if (!ptrNode->IsLeaf()) {
         DMVector<PDmtNode> aChildren;
-        if ( (e=ptrNode->GetChildNodes( aChildren )) != NULL ) {
+        ret = ptrNode->GetChildNodes(aChildren);
+        if (ret != SYNCML_DM_SUCCESS) {
             DMString path;
             ptrNode->GetPath(path);
             strcatEx("can't get child nodes of %s", path.c_str());
             return;
         }
-        for (int i=0; i < aChildren.size(); i++) {
-            DumpSubTree( aChildren[i] );
+        UINT32 childLength = aChildren.size();
+        for (UINT32 i = 0; i < childLength; ++i) {
+            DumpSubTree(aChildren[i]);
         }
     }
 }
 
-static void PrintNode(PDmtNode ptrNode )
+static SYNCML_DM_RET_STATUS_T PrintNode(PDmtNode ptrNode)
 {
     LOGD("Enter PrintNode\n");
     DmtAttributes oAttr;
     DMString path;
 
-    if( (e=ptrNode->GetPath(path)) != NULL )
+    SYNCML_DM_RET_STATUS_T ret = ptrNode->GetPath(path);
+    if (ret != SYNCML_DM_SUCCESS)
     {
-        strcatEx("can't get attributes of node %d",  e.GetErrorCode());
+        strcatEx("can't get attributes of node %d", ret);
     }
-    LOGD("Get attrributes\n");
-    if ( (e=ptrNode->GetAttributes( oAttr )) != NULL) {
-        strcatEx("can't get attributes of node %s",  path.c_str());
-        return;
+
+    LOGD("Get attributes\n");
+    if ((ret = ptrNode->GetAttributes(oAttr)) != ptrNode->GetPath(path)) {
+        strcatEx("can't get attributes of node %s", path.c_str());
+        return ret;
     }
-    LOGD("Checi storage mode...\n");
+
+    LOGD("Check storage mode...\n");
     DmtData oData;
     if (!ptrNode->IsExternalStorageNode())
     {
         LOGD("Enter get value...\n");
-        SYNCML_DM_RET_STATUS_T ret1 = SYNCML_DM_SUCCESS;
-        ret1 =ptrNode->GetValue(oData);
+        SYNCML_DM_RET_STATUS_T ret1 = ptrNode->GetValue(oData);
         if (ret1 != SYNCML_DM_SUCCESS) {
             LOGD("Value is null");
             strcatEx("can't get value of node %s", path.c_str());
-            return;
+            return ret1;
         }
     }
 
@@ -320,44 +407,49 @@ static void PrintNode(PDmtNode ptrNode )
     strcatEx("type=%s\n", (const char*)oAttr.GetType().c_str() );
     strcatEx("title=%s\n", (const char*)oAttr.GetTitle().c_str() );
     strcatEx("acl=%s\n", (const char*)oAttr.GetAcl().toString().c_str() );
-
-    strcatEx("size=%d\n", (const char*)oAttr.GetSize() );
-    if (bShowTimestamp ) {
-        if ( oAttr.GetTimestamp() == 0 ) {
+    strcatEx("size=%d\n", oAttr.GetSize());
+    if (bShowTimestamp) {
+        time_t timestamp = (time_t)(oAttr.GetTimestamp()/1000L);
+        if (timestamp == 0) {
             strcatEx("timestamp=(Unknown)\n");
         } else {
-            time_t timestamp = (time_t)(oAttr.GetTimestamp()/1000L);
-            strcatEx("timestamp=%s", ctime(&timestamp) );
+            char timestampbuf[27];
+            ctime_r(&timestamp, timestampbuf);
+            strcatEx("timestamp=%s", timestampbuf);
         }
     }
 
     strcatEx("version=%d\n", oAttr.GetVersion() );
     if ( !ptrNode->IsLeaf() ) {
         DMStringVector aChildren;
-        oData.GetNodeValue( aChildren );
+        oData.GetNodeValue(aChildren);
         strcatEx("children:");
         if ( aChildren.size() == 0 ) {
             strcatEx("null");
         }
-
-        for (int i=0; i < aChildren.size(); i++) {
-            strcatEx("%s/", aChildren[i].c_str());
+        UINT32 childLength = aChildren.size();
+        for (UINT32 i = 0; i < childLength; ++i) {
+            const DMString& child = aChildren[i];
+            strcatEx("%s/", child.c_str());
         }
         strcatEx("\n");
     } else {
         if (ptrNode->IsExternalStorageNode())
         {
             strcatEx("value=\n");
-            strcatEx("It is a ESN node, not supportted now");
+            strcatEx("It is an ESN node, not supported now");
             //displayESN(ptrNode);
         }
         else {
-            if ( strcasecmp(oAttr.GetFormat(), "bin") == 0 ) {
+            if (oAttr.GetFormat() == "bin") {
                 strcatEx("Binary value: [");
-                for ( int i = 0 ; i < oData.GetBinaryValue().size(); i++ ){
-                    strcatEx("%02x ", oData.GetBinaryValue().get_data()[i]);
+                const DMVector<UINT8>& val = oData.GetBinaryValue();
+                UINT32 valLength = val.size();
+                for (UINT32 i = 0; i < valLength; ++i) {
+                    UINT8 byte = val[i];
+                    strcatEx("%02x ", byte);
                 }
-                strcatEx("]\n" );
+                strcatEx("]\n");
             }
             else
             {
@@ -366,8 +458,8 @@ static void PrintNode(PDmtNode ptrNode )
                 strcatEx("value=%s\n", s.c_str());
             }
         }
-
     }
+    return SYNCML_DM_SUCCESS;
 }
 
 short wbxml2xml(unsigned char *bufIn, int bufInLen, unsigned char *bufOut, int * bufOutLen)
@@ -379,7 +471,7 @@ short wbxml2xml(unsigned char *bufIn, int bufInLen, unsigned char *bufOut, int *
     return ret;
 }
 
-JNIEXPORT jbyteArray JNICALL ConvertWbxml2Xml( JNIEnv *env, jclass clz, jbyteArray bArray)
+JNIEXPORT jbyteArray JNICALL ConvertWbxml2Xml(JNIEnv* env, jclass, jbyteArray bArray)
 {
     unsigned char* xmlBuf = NULL;
     int xmlLen = 0;
@@ -411,14 +503,14 @@ JNIEXPORT jbyteArray JNICALL ConvertWbxml2Xml( JNIEnv *env, jclass clz, jbyteArr
 
     if (ret != 0) {
         LOGE("ConvertWbxml2Xml: wbxml2xml failed: %d\n", ret);
-        delete []xmlBuf;
+        delete [] xmlBuf;
         return NULL;
     }
 
     jbyteArray jb = env->NewByteArray(xmlLen);
     env->SetByteArrayRegion(jb, 0, xmlLen, (jbyte*)xmlBuf);
     LOGD("ConvertWbxml2Xml: result xml length = %d\n", xmlLen);
-    delete []xmlBuf;
+    delete [] xmlBuf;
     return jb;
 }
 
@@ -450,12 +542,18 @@ static JNINativeMethod gMethods[] = {
     {"nativeWbxmlToXml",
         "([B)[B",
         (void*)ConvertWbxml2Xml},
+    {"getNodeType",
+        "(Ljava/lang/String;)I",
+        (void*)getNodeType},
+    {"getNodeValue",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+        (void*)getNodeValue},
 };
 
 int registerDMTreeNatives(JNIEnv *env)
 {
     jclass clazz = env->FindClass(javaDMEnginePackage);
-    if(clazz == NULL)
+    if (clazz == NULL)
         return JNI_FALSE;
 
     if (env->RegisterNatives(clazz, gMethods, sizeof(gMethods)/sizeof(gMethods[0])) < 0)

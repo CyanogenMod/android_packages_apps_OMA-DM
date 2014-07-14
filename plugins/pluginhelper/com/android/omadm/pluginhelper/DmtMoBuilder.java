@@ -25,7 +25,6 @@ import com.android.omadm.plugin.DmtPathUtils;
 import com.android.omadm.plugin.DmtPluginNode;
 import com.android.omadm.plugin.ErrorCodes;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -184,19 +183,11 @@ public class DmtMoBuilder {
             return ErrorCodes.SYNCML_DM_INVALID_URI;
         }
 
-        ArrayList<String> children;
         try {
-            children = rootNode.getValue().getNodeValue();
+            rootNode.getValue().addChildNode(nodeName, new DmtData());
         } catch (DmtException e) {
             return e.getCode();
         }
-
-        if (children == null) {
-            children = new ArrayList<String>();
-        }
-        children.add(nodeName);
-
-        rootNode.setValue(new DmtData(children));
 
         return ErrorCodes.SYNCML_DM_SUCCESS;
     }

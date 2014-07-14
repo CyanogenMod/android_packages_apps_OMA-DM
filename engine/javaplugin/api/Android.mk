@@ -5,6 +5,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-subdir-java-files) \
+                   com/android/omadm/plugin/IDMClientService.aidl \
                    com/android/omadm/plugin/IDmtPlugin.aidl
 
 #LOCAL_JAVA_RESOURCE_DIRS := resources

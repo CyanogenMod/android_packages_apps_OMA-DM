@@ -198,14 +198,6 @@
                 android:theme="@android:style/Theme.Holo"
                 android:launchMode="singleTask"/>
 
-        <provider
-                android:name="DMSettingsProvider"
-                android:exported="true"
-                android:authorities="com.android.omadm.service"
-                android:readPermission="com.android.permission.READ_OMADM_SETTINGS"
-                android:writePermission="com.android.permission.WRITE_OMADM_SETTINGS"
-                android:multiprocess="false"/>
-
     </application>
 
 </manifest>

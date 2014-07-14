@@ -21,9 +21,10 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DmtData encapsulates various DMT node data formats.
@@ -75,24 +76,34 @@ public class DmtData implements Parcelable {
     public static final int BIN = 4;
 
     /**
+     * Interior Node
+     */
+    public static final int NODE = 5;
+
+    /**
+     * Base 64 Node
+     */
+    public static final int B64 = 6;
+
+    /**
+     * XML Node
+     */
+    public static final int XML = 7;
+
+    /**
      * Date data
      */
-    public static final int DATE = 5;
+    public static final int DATE = 8;
 
     /**
      * Time data
      */
-    public static final int TIME = 6;
+    public static final int TIME = 10;
 
     /**
      * Float data
      */
-    public static final int FLOAT = 7;
-
-    /**
-     * Interior Node
-     */
-    public static final int NODE = 8;
+    public static final int FLOAT = 11;
 
     /*
      * Used to create a DmtData((String)null)
@@ -115,7 +126,7 @@ public class DmtData implements Parcelable {
 
     private float floatValue;
 
-    private ArrayList<String> nodeValue; // Child Node Names
+    private final HashMap<String, DmtData> childNodes = new HashMap<String, DmtData>();
 
     /**
      * Data represent a default value, it is only used for setting default value
@@ -167,11 +178,13 @@ public class DmtData implements Parcelable {
                 }
                 break;
             case NODE:
+                childNodes.clear();
                 String[] strArray = str.split("\\|");
                 int cnt = strArray.length;
                 if (cnt > 0 && !strArray[0].isEmpty()) {
-                    nodeValue = new ArrayList<String>();
-                    Collections.addAll(nodeValue, strArray);
+                    for (String name : strArray) {
+                        childNodes.put(name, new DmtData());
+                    }
                 }
                 break;
             default:
@@ -215,11 +228,6 @@ public class DmtData implements Parcelable {
         type = BIN;
     }
 
-    public DmtData(ArrayList<String> value) {
-        nodeValue = value;
-        type = NODE;
-    }
-
     public DmtData(float value) {
         floatValue = value;
         type = FLOAT;
@@ -254,18 +262,16 @@ public class DmtData implements Parcelable {
             case FLOAT:
                 return String.valueOf(floatValue);
             case NODE:
-                StringBuffer tmpValue = new StringBuffer("");
+                StringBuilder tmpValue = new StringBuilder();
                 try {
-                    if (nodeValue == null || nodeValue.isEmpty()) {
-                        return tmpValue.toString();
-                    }
-                    for (String node : nodeValue) {
+                    for (String node : childNodes.keySet()) {
                         tmpValue.append(node).append('|');
                     }
-                    tmpValue.deleteCharAt(tmpValue.length() - 1);
+                    if (tmpValue.length() != 0) {
+                        tmpValue.deleteCharAt(tmpValue.length() - 1);
+                    }
                 } catch (Exception e) {
                     Log.e(TAG, "getString() failed for node object", e);
-                    tmpValue = new StringBuffer("");
                 }
                 return tmpValue.toString();
             default:
@@ -312,13 +318,52 @@ public class DmtData implements Parcelable {
         return binValue;
     }
 
-    public ArrayList<String> getNodeValue() throws DmtException {
-        // if (type != NODE)
-        // {
-        // throw new DmtException(ErrorCodes.SYNCML_DM_INVALID_PARAMETER,
-        // "The value requested is not interior node");
-        // }
-        return nodeValue;
+    /**
+     * Adds the specified child node to this interior node.
+     * @param name the name of the node to add
+     * @param child the node data to add
+     * @throws DmtException if this is not an interior node
+     */
+    public void addChildNode(String name, DmtData child) throws DmtException {
+        if (type != NODE) {
+            throw new DmtException(ErrorCodes.SYNCML_DM_INVALID_PARAMETER,
+                    "can't add children to leaf node");
+        }
+        childNodes.put(name, child);
+    }
+
+    public void removeChildNode(String name) throws DmtException {
+        if (type != NODE) {
+            throw new DmtException(ErrorCodes.SYNCML_DM_INVALID_PARAMETER,
+                    "can't add children to leaf node");
+        }
+        childNodes.remove(name);
+    }
+
+    /**
+     * Returns the specified child of this interior node.
+     * @return the specified node data, or null if not found
+     * @throws DmtException if this is not an interior node
+     */
+    public DmtData getChild(String name) throws DmtException {
+        if (type != NODE) {
+            throw new DmtException(ErrorCodes.SYNCML_DM_INVALID_PARAMETER,
+                    "can't get children of leaf node");
+        }
+        return childNodes.get(name);
+    }
+
+    /**
+     * Returns all children of this interior node.
+     * @return a map from node names to node data
+     * @throws DmtException if this is not an interior node
+     */
+    public Map<String, DmtData> getChildNodeMap() throws DmtException {
+        if (type != NODE) {
+            throw new DmtException(ErrorCodes.SYNCML_DM_INVALID_PARAMETER,
+                    "can't get children of leaf node");
+        }
+        return Collections.unmodifiableMap(childNodes);
     }
 
     @Override
@@ -377,7 +422,54 @@ public class DmtData implements Parcelable {
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(type);
-        out.writeString(getString());
+        switch (type) {
+            case NULL:
+                break;
+
+            case STRING:
+                out.writeString(stringValue);
+                break;
+
+            case INT:
+                out.writeInt(intValue);
+                break;
+
+            case BOOL:
+                out.writeInt(boolValue ? 1 : 0);
+                break;
+
+            case BIN:
+                if (binValue == null || binValue.length == 0) {
+                    out.writeInt(0);
+                } else {
+                    out.writeInt(binValue.length);
+                    out.writeByteArray(binValue);
+                }
+                break;
+
+            case DATE:
+                out.writeString(dateValue);
+                break;
+
+            case TIME:
+                out.writeString(timeValue);
+                break;
+
+            case FLOAT:
+                out.writeFloat(floatValue);
+                break;
+
+            case NODE:
+                out.writeInt(childNodes.size());
+                for (Map.Entry<String, DmtData> entry : childNodes.entrySet()) {
+                    out.writeString(entry.getKey());
+                    entry.getValue().writeToParcel(out, flags);
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     @Override
@@ -399,13 +491,56 @@ public class DmtData implements Parcelable {
 
     DmtData(Parcel in) {
         type = in.readInt();
-        String tmpValue = in.readString();
-        if (type <= NULL || type > NODE) {
-            if (type != NULL) {
-                type = UNDEFINED;
-            }
-            return;
+        switch (type) {
+            case NULL:
+                break;
+
+            case STRING:
+                stringValue = in.readString();
+                break;
+
+            case INT:
+                intValue = in.readInt();
+                break;
+
+            case BOOL:
+                boolValue = (in.readInt() != 0);
+                break;
+
+            case BIN:
+                int length = in.readInt();
+                if (length == 0) {
+                    binValue = null;
+                } else {
+                    binValue = new byte[length];
+                    in.readByteArray(binValue);
+                }
+                break;
+
+            case DATE:
+                dateValue = in.readString();
+                break;
+
+            case TIME:
+                timeValue = in.readString();
+                break;
+
+            case FLOAT:
+                floatValue = in.readFloat();
+                break;
+
+            case NODE:
+                childNodes.clear();
+                int childNodeCount = in.readInt();
+                if (childNodeCount != 0) {
+                    String name = in.readString();
+                    DmtData value = new DmtData(in);
+                    childNodes.put(name, value);
+                }
+                break;
+
+            default:
+                break;
         }
-        init(tmpValue, type);
     }
 }

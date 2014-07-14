@@ -1,15 +1,30 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifdef PLATFORM_ANDROID
 
 #include "dm_tpt_connection.H"
+#include "dm_tpt_utils.h"
 #include "DMServiceMain.h"
 #include <android_runtime/AndroidRuntime.h>
 
-SYNCML_DM_OTAConnection::SYNCML_DM_OTAConnection()
+SYNCML_DM_OTAConnection::SYNCML_DM_OTAConnection() : m_maxAcptSize(0), m_szURL()
 {
-    m_maxAcptSize = 0;
-    m_szURL = "";
-
     JNIEnv* jEnv = NULL;
+
     if (android::AndroidRuntime::getJavaVM()) {
         jEnv = android::AndroidRuntime::getJNIEnv();
         m_jNetConnObj = getNetConnector();
@@ -61,19 +76,19 @@ end:
 
 SYNCML_DM_OTAConnection::~SYNCML_DM_OTAConnection()
 {
-    LOGD("~");
+    LOGD("~SYNCML_DM_OTAConnection()");
 }
 
-SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Init(UINT32 dwMaxAcptSize,
-        XPL_ADDR_TYPE_T AddressType,
+SYNCML_DM_RET_STATUS_T
+SYNCML_DM_OTAConnection::Init(UINT32 dwMaxAcptSize, XPL_ADDR_TYPE_T AddressType,
         CPCHAR ConRef)
 {
-    LOGD("dwMaxAcptSize=%d, AddressType=%d\n", dwMaxAcptSize, AddressType);
+    LOGD("dwMaxAcptSize=%d, AddressType=%d", dwMaxAcptSize, AddressType);
 
-    if (ConRef) {
-        LOGD("ConRef=%s\n", ConRef);
+    if (ConRef != NULL) {
+        LOGD("ConRef=%s", ConRef);
         JNIEnv* jEnv = android::AndroidRuntime::getJNIEnv();
-        jstring jConRef = jEnv->NewStringUTF((const char*)ConRef);
+        jstring jConRef = jEnv->NewStringUTF(ConRef);
         jEnv->CallVoidMethod(m_jNetConnObj, m_jEnbleApnByName, jConRef);
     }
 
@@ -82,11 +97,10 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Init(UINT32 dwMaxAcptSize,
     return SYNCML_DM_SUCCESS;
 }
 
-SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
-        const SYNCML_DM_INDIRECT_BUFFER_T *psSendSyncMLDocument,
-        SYNCML_DM_INDIRECT_BUFFER_T *psRecvSyncMLDocument,
-        const UINT8 *pbContType,
-        const DMCredHeaders * psCredHdr)
+SYNCML_DM_RET_STATUS_T
+SYNCML_DM_OTAConnection::Send(const SYNCML_DM_INDIRECT_BUFFER_T* psSendSyncMLDocument,
+        SYNCML_DM_INDIRECT_BUFFER_T* psRecvSyncMLDocument, const UINT8* pbContType,
+        const DMCredHeaders* psCredHdr)
 {
     LOGD("Send=%d", psSendSyncMLDocument->dataSize);
 
@@ -109,7 +123,7 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
     }
 
     // Check whether psCredHdr is valid
-    if ( psCredHdr->isCorrect() == FALSE )
+    if (!psCredHdr->isCorrect())
         return SYNCML_DM_FAIL;
 
     JNIEnv* jEnv = android::AndroidRuntime::getJNIEnv();
@@ -117,7 +131,7 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
     jstring jContentType = jEnv->NewStringUTF((const char*)pbContType);
     jEnv->CallVoidMethod(m_jNetConnObj, m_jSetContentType, jContentType);
 
-    CPCHAR strUrl = m_szURL.GetBuffer();
+    CPCHAR strUrl = m_szURL.c_str();
     LOGD("url=%s", strUrl);
     jstring jurl = jEnv->NewStringUTF(strUrl);
     jbyteArray jDataArray = jEnv->NewByteArray(psSendSyncMLDocument->dataSize);
@@ -125,36 +139,47 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
             0, psSendSyncMLDocument->dataSize,
             (const jbyte*)psSendSyncMLDocument->pData);
 
-    jint jResult;
     int wNumRetries = 0;
 
     jstring jstrMac = NULL;
     if (psCredHdr->empty() == FALSE) {
-        DMString strHMAC = "";
-        strHMAC+=("algorithm=MD5,username=\"");
-        strHMAC+=((CPCHAR)psCredHdr->m_oUserName.getBuffer());
-        strHMAC+=("\",mac=");
-        strHMAC+=((CPCHAR)psCredHdr->m_oMac.getBuffer());
-        LOGD("mac length:%d\n", psCredHdr->m_oMac.getSize());
-        //LOGD("mac value in hex:%x\n", psCredHdr->m_oMac.getBuffer());
-        LOGD("hmac value =%s\n", strHMAC.GetBuffer());
-        jstrMac = jEnv->NewStringUTF(strHMAC.GetBuffer());
+        DMString strHMAC;
+        strHMAC += "algorithm=MD5,username=\"";
+        strHMAC += reinterpret_cast<CPCHAR>(psCredHdr->m_oUserName.getBuffer());
+        strHMAC += "\",mac=";
+        strHMAC += reinterpret_cast<CPCHAR>(psCredHdr->m_oMac.getBuffer());
+        LOGD("mac length=%d", psCredHdr->m_oMac.getSize());
+        //LOGD("mac value in hex:%x", psCredHdr->m_oMac.getBuffer());
+        LOGD("hmac value=%s", strHMAC.c_str());
+        jstrMac = jEnv->NewStringUTF(strHMAC.c_str());
     }
 
-    while (wNumRetries < DMTPT_MAX_RETRIES) {
-        jResult = jEnv->CallIntMethod(m_jNetConnObj, m_jSendRequest, jurl, jDataArray, jstrMac /*hmac*/);
-        LOGD("Send result=%d", jResult);
+    SYNCML_DM_RET_STATUS_T jResult = SYNCML_DM_FAIL;
+
+    while (wNumRetries < DMTPT_MAX_RETRIES)
+    {
+        jResult = static_cast<SYNCML_DM_RET_STATUS_T>(jEnv->CallIntMethod(
+                m_jNetConnObj, m_jSendRequest, jurl, jDataArray, jstrMac /*hmac*/));
+
+        LOGD("Send result=%d", static_cast<int>(jResult));
 
         // retry for timeout or general connection errors
-        if(jResult == SYNCML_DM_SOCKET_TIMEOUT || jResult == SYNCML_DM_SOCKET_CONNECT_ERR || jResult == SYNCML_DM_NO_HTTP_RESPONSE
-           || jResult == SYNCML_DM_REQUEST_TIMEOUT || jResult == SYNCML_DM_INTERRUPTED
-           || jResult == SYNCML_DM_SERVICE_UNAVAILABLE || jResult == SYNCML_DM_GATEWAY_TIMEOUT ){
+        if (jResult == SYNCML_DM_SOCKET_TIMEOUT
+                || jResult == SYNCML_DM_SOCKET_CONNECT_ERR
+                || jResult == SYNCML_DM_NO_HTTP_RESPONSE
+                || jResult == SYNCML_DM_REQUEST_TIMEOUT
+                || jResult == SYNCML_DM_INTERRUPTED
+                || jResult == SYNCML_DM_SERVICE_UNAVAILABLE
+                || jResult == SYNCML_DM_GATEWAY_TIMEOUT)
+        {
             wNumRetries++;
-            sleep(10);  // sleep a little bit before trying again
+
+            // FIXME: thread blocks here on sleep for 10 seconds
+            ::sleep(10);  // sleep a little bit before trying again
             continue;
         }
 
-        if (jResult == 200) {
+        if (static_cast<int>(jResult) == 200) {
             jlong jResponseLen = jEnv->CallLongMethod(m_jNetConnObj, m_jGetRespLength);
             LOGD("response length=%lld", jResponseLen);
             if(jResponseLen > 0 && jResponseLen <= m_maxAcptSize){
@@ -171,17 +196,17 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
                 jobjHMACValue = jEnv->CallObjectMethod(m_jNetConnObj, jmethodGetHeader, jstrHMAC);
                 if(jobjHMACValue != NULL)
                 {
-                    LOGD("Get hmac header successfully!\n");
+                    LOGD("Get hmac header successfully!");
                     const char * strHMACValue = jEnv->GetStringUTFChars(static_cast<jstring>(jobjHMACValue), NULL);
-                    LOGD("hmac value=%s\n", strHMACValue);
-                    if(strHMACValue != NULL && strlen(strHMACValue) >0)
+                    LOGD("hmac value=%s", strHMACValue);
+                    if(strHMACValue != NULL && strlen(strHMACValue) > 0)
                     {
                         ProcessCredHeaders(strHMACValue);
                     }
-                    LOGD("Finish process hmac header!\n");
-                    LOGD("m_pCredHeaders: algorithm:%s\n", (CPCHAR)(m_pCredHeaders->m_oAlgorithm.getBuffer()));
-                    LOGD("m_pCredHeaders: username:%s\n", (CPCHAR)(m_pCredHeaders->m_oUserName.getBuffer()));
-                    LOGD("m_oRecvCredHeaders: mac:%s\n", (CPCHAR)(m_pCredHeaders->m_oMac.getBuffer()));
+                    LOGD("Finish process hmac header!");
+                    LOGD("m_pCredHeaders: algorithm:%s", ((CPCHAR)m_pCredHeaders->m_oAlgorithm.getBuffer()));
+                    LOGD("m_pCredHeaders: username:%s", ((CPCHAR)m_pCredHeaders->m_oUserName.getBuffer()));
+                    LOGD("m_oRecvCredHeaders: mac:%s", ((CPCHAR)m_pCredHeaders->m_oMac.getBuffer()));
 
                     jEnv->ReleaseStringUTFChars(static_cast<jstring>(jobjHMACValue), strHMACValue);
                 }
@@ -196,7 +221,7 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::Send(
         }
     }
 
-    LOGD("Server or Net issue. return code=%d", jResult);
+    LOGD("Server or Net issue. return code=%d", static_cast<int>(jResult));
     return jResult;
 }
 
@@ -214,103 +239,85 @@ SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::SetURI(CPCHAR szURL)
 // DESCRIPTION: This method extracts the Credential headers from the
 //               Response headers
 //
-// ARGUMENTS PASSED:
-//          INPUT : Pointer to the Response header
-//
-//
-//          OUTPUT: None
-//
-// RETURN VALUE:    BOOLEAN
-//                  TRUE - If handled successfully
-//                  FALSE - If there is some failure
-//
+// ARGUMENTS PASSED:    the HMAC string
+// RETURN VALUE:
+//                  SYNCML_DM_SUCCESS on success
+//                  SYNCML_DM_FAIL on any failure
 //
 // IMPORTANT NOTES: The HandleOTARedirect method calls this method.
 //==============================================================================
-SYNCML_DM_RET_STATUS_T SYNCML_DM_OTAConnection::ProcessCredHeaders(CPCHAR pbOrigHmacStr)
+SYNCML_DM_RET_STATUS_T
+SYNCML_DM_OTAConnection::ProcessCredHeaders(CPCHAR origHmacStr)
 {
+    LOGD(("Enter SYNCML_DM_OTAConnection::ProcessCredHeaders"));
 
-    UINT8 *pbHmacString = NULL;
-    UINT8 *pbInitialHmacString = NULL;
-    UINT8 *pbParam = NULL;
-    UINT8 *pbValue = NULL;
-    char  *pbAlgo = NULL;
-    char  *pbUname = NULL;
-    char  *pbMAC = NULL;
-
-    LOGD(("Enter SYNCML_DM_OTAConnection::ProcessCredHeaders\n"));
-    if(pbOrigHmacStr == NULL)
-        return TRUE;
-
-    //Trim the blank space and tabs
-    pbHmacString = DMTPTTrimString((UINT8*)pbOrigHmacStr);
-    if (pbHmacString == NULL)
-    {
+    if (origHmacStr == NULL)
         return SYNCML_DM_FAIL;
+
+    // Trim the blank space and tabs
+    DMString hmacString;
+    size_t origHmacStrLen = ::strlen(origHmacStr);
+    for (size_t i = 0; i < origHmacStrLen; ++i)
+    {
+        char c = origHmacStr[i];
+        if (c != ' ' && c != '\t')
+            hmacString += c;
     }
 
-    pbInitialHmacString = pbHmacString;
+    // make R/W copy of hmac string and clear the C++ string.
+    // TODO: convert this logic to use C++ strings.
+    char* initialHmacString = new char[hmacString.length() + 1];
+    memcpy(initialHmacString, hmacString.c_str(), (hmacString.length() + 1));
+    hmacString.clear();
 
-    pbHmacString = (UINT8*)DmStrstr((CPCHAR)pbHmacString, "algorithm");
+    UINT8* pbParam = NULL;
+    UINT8* pbValue = NULL;
+    char*  pbAlgo  = NULL;
+    char*  pbUname = NULL;
+    char*  pbMAC   = NULL;
+
+    UINT8* pbHmacString = reinterpret_cast<UINT8*>(DmStrstr(initialHmacString, "algorithm"));
 
     if (pbHmacString == NULL)
-        pbHmacString = (UINT8*)DmStrstr((CPCHAR)pbInitialHmacString,"username");
+        pbHmacString = reinterpret_cast<UINT8*>(DmStrstr(initialHmacString, "username"));
 
-        //Extract the algorithm, Username and mac from
-        //the x-syncml-hmac header
-     while (pbHmacString != NULL)
-     {
-         pbHmacString = DM_TPT_splitParamValue(pbHmacString,&pbParam,&pbValue);
+    // Extract the algorithm, Username and mac from the x-syncml-hmac header
+    while (pbHmacString != NULL)
+    {
+        pbHmacString = DM_TPT_splitParamValue(pbHmacString, &pbParam, &pbValue);
 
-         if ((pbParam != NULL) && (pbParam [0] != '\0'))
-         {
-             if (!DmStrcmp ((CPCHAR)pbParam, "algorithm"))
-             {
-                 pbAlgo = (char*)pbValue;
-             }
-             else
-                if (!DmStrcmp ((CPCHAR)pbParam, "username"))
-                {
-                    pbUname = (char*)pbValue;
-                }
-                else
-                    if (!DmStrcmp ((CPCHAR)pbParam, "mac"))
-                    {
-                        pbMAC = (char*)pbValue;
-                    }
-         }
+        if ((pbParam != NULL) && (pbParam[0] != '\0'))
+        {
+            if (!strcmp((CPCHAR)pbParam, "algorithm"))
+            {
+                pbAlgo = reinterpret_cast<char*>(pbValue);
+            }
+            else if (!strcmp((CPCHAR)pbParam, "username"))
+            {
+                pbUname = reinterpret_cast<char*>(pbValue);
+            }
+            else if (!strcmp((CPCHAR)pbParam, "mac"))
+            {
+                pbMAC = reinterpret_cast<char*>(pbValue);
+            }
+        }
     }
 
-        // Allocate memory to hold username, mac, algorithm
+    // Allocate memory to hold username, mac, algorithm
     if (pbUname == NULL || pbMAC == NULL)
     {
-        DmFreeMem(pbInitialHmacString);
+        delete[] initialHmacString;
         return SYNCML_DM_FAIL;
     }
 
-    if (pbAlgo != NULL)
-        m_pCredHeaders->m_oAlgorithm.assign(pbAlgo);
-    else
-        m_pCredHeaders->m_oAlgorithm.assign("MD5");
-
-    if ( m_pCredHeaders->m_oAlgorithm.getBuffer() == NULL )
-    {
-        DmFreeMem(pbInitialHmacString);
-        return SYNCML_DM_DEVICE_FULL;
-    }
-
+    m_pCredHeaders->m_oAlgorithm.assign((pbAlgo != NULL) ? pbAlgo : "MD5");
     m_pCredHeaders->m_oUserName.assign(pbUname);
     m_pCredHeaders->m_oMac.assign(pbMAC);
 
-    if ( m_pCredHeaders->m_oMac.getBuffer() == NULL )
-    {
-        DmFreeMem(pbInitialHmacString);
-        return SYNCML_DM_DEVICE_FULL;
-    }
-    DmFreeMem(pbInitialHmacString);
-    LOGD(("Leave SYNCML_DM_OTAConnection::ProcessCredHeaders\n"));
+    delete[] initialHmacString;
+
+    LOGD(("Leave SYNCML_DM_OTAConnection::ProcessCredHeaders"));
     return SYNCML_DM_SUCCESS;
 }
 
 #endif
-

@@ -26,10 +26,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
+import com.android.omadm.plugin.DmtData;
+import com.android.omadm.plugin.DmtException;
+import com.android.omadm.plugin.IDMClientService;
 import com.android.omadm.plugin.impl.DmtPluginManager;
 
 import net.jcip.annotations.GuardedBy;
@@ -40,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -95,9 +100,70 @@ public class DMClientService extends IntentService {
 
     // Class for clients to access. Because we know this service always runs
     // in the same process as its clients, we don't need to deal with IPC.
-    public class LocalBinder extends Binder {
-        DMClientService getService() {
-            return DMClientService.this;
+    public class LocalBinder extends IDMClientService.Stub {
+        @Override
+        public DmtData getDMTree(String path, boolean recursive)
+                throws RemoteException {
+            try {
+                if (DBG)
+                    logd("getDMTree(\"" + path + "\", " + recursive + ") called");
+                synchronized (mSessionLock) {
+                    int nodeType = NativeDM.getNodeType(path);
+                    String nodeValue = NativeDM.getNodeValue(path);
+                    DmtData dmtData = new DmtData(nodeValue, nodeType);
+                    if (nodeType == DmtData.NODE && recursive) {
+                        addNodeChildren(path, dmtData);
+                    }
+                    return dmtData;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "caught exception", e);
+                return new DmtData("", DmtData.STRING);
+            }
+        }
+
+        private void addNodeChildren(String path, DmtData node) throws DmtException {
+            for (Map.Entry<String, DmtData> child : node.getChildNodeMap().entrySet()) {
+                String childPath = path + '/' + child.getKey();
+
+                int nodeType = NativeDM.getNodeType(childPath);
+                String nodeValue = NativeDM.getNodeValue(childPath);
+
+                DmtData newChildNode = new DmtData(nodeValue, nodeType);
+
+                node.addChildNode(child.getKey(), newChildNode);
+
+                if (nodeType == DmtData.NODE) {
+                    addNodeChildren(childPath, newChildNode);
+                }
+            }
+        }
+
+        @Override
+        public int startClientSession(String path, String clientCert, String privateKey,
+                                      String alertType, String redirectURI, String username, String password)
+                throws RemoteException {
+            if (DBG) logd("startClientSession(\"" + path + "\", \"" + clientCert
+                    + "\", \"" + privateKey + "\", \"" + alertType + "\", \"" + redirectURI
+                    + "\", \"" + username + "\", \"" + password + "\") called");
+            return 0;
+        }
+
+        @Override
+        public int notifyExecFinished(String path) throws RemoteException {
+            if (DBG) logd("notifyExecFinished(\"" + path + "\") called");
+            return 0;
+        }
+
+        @Override
+        public int injectSoapPackage(String path, String command, String payload)
+                throws RemoteException {
+            if (DBG) logd("injectSoapPackage(\"" + path + "\", \"" + command
+                    + "\", \"" + payload + "\") called");
+            synchronized (mSessionLock) {
+                //return processSerializedTree(serverId, path, command, payload);   // FIXME
+            }
+            return DMResult.SYNCML_DM_FAIL;
         }
     }
 
@@ -271,78 +337,6 @@ public class DMClientService extends IntentService {
                     synchronized (mSessionLock) {
                         ret = mSession
                                 .startLawmoNotifySession((FotaNotifyContext) pkg.mobj);
-                    }
-                    break;
-
-                case DMIntent.TYPE_UNITEST_GET_STRING_NODE:
-                    String path = (String) pkg.mobj;
-                    if (path != null && !path.isEmpty()) {
-                        String retStr = getNodeInfo(path);
-                        if (DBG) {
-                            Log.d(TAG, retStr);
-                        }
-                        Intent intent = new Intent(DMIntent.DM_SERVICE_RESULT_INTENT);
-                        intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, retStr);
-                        intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
-                        sendBroadcast(intent);
-                    }
-                    break;
-
-                case DMIntent.TYPE_UNITEST_SET_STRING_NODE:
-                    Pair<String, String> vp = (Pair<String, String>) pkg.mobj;
-                    if (!TextUtils.isEmpty(vp.first)) {
-                        String retStr = setStringNode(vp.first, vp.second);
-                        if (DBG) {
-                            Log.d(TAG, retStr);
-                        }
-                        Intent intent = new Intent(DMIntent.DM_SERVICE_RESULT_INTENT);
-                        intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, retStr);
-                        intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
-                        sendBroadcast(intent);
-                    }
-                    break;
-
-                case DMIntent.TYPE_UNITEST_PROCESS_SCRIPT:
-                    String fileName = (String) pkg.mobj;
-                    boolean isBinary = pkg.mbvalue;
-                    byte[] dmResult;
-                    synchronized (mSessionLock) {
-                        dmResult = processScript(fileName, isBinary, mSession);
-                    }
-                    if (dmResult != null) {
-                        Intent intent = new Intent(DMIntent.DM_SERVICE_RESULT_INTENT);
-                        if (!isBinary || dmResult.length == 5) {
-                            String retStr = new String(dmResult);
-                            if (DBG) {
-                                Log.d(TAG, retStr);
-                            }
-                            intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, retStr);
-                        } else {
-                            byte[] xml = NativeDM.nativeWbxmlToXml(dmResult);
-                            String strXml = new String(xml);
-                            if (DBG) {
-                                Log.d(TAG, strXml);
-                            }
-                            intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, strXml);
-                        }
-                        intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
-                        sendBroadcast(intent);
-                    }
-                    //ret = 0;
-                    break;
-
-                case DMIntent.TYPE_UNITEST_DUMP_TREE:
-                    String nodePath = (String) pkg.mobj;
-                    if (nodePath != null && !nodePath.isEmpty()) {
-                        String retStr = dumpTree(nodePath);
-                        if (DBG) {
-                            Log.d(TAG, retStr);
-                        }
-                        Intent intent = new Intent(
-                                DMIntent.DM_SERVICE_RESULT_INTENT);
-                        intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, retStr);
-                        intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
-                        sendBroadcast(intent);
                     }
                     break;
             }
@@ -520,78 +514,7 @@ public class DMClientService extends IntentService {
                 processMsg(pkg);
                 break;
             }
-            case DMIntent.TYPE_UNITEST_SET_STRING_NODE: {
-                String path = intent.getStringExtra("NodePath");
-                String value = intent.getStringExtra("NodeValue");
-
-                DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
-                pkg.mobj = new Pair<String, String>(path, value);
-                processMsg(pkg);
-                break;
-            }
-            case DMIntent.TYPE_UNITEST_GET_STRING_NODE: {
-                String path = intent.getStringExtra("NodePath");
-
-                DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
-
-                pkg.mobj = path;
-                processMsg(pkg);
-                break;
-            }
-            case DMIntent.TYPE_UNITEST_DUMP_TREE: {
-                String path = intent.getStringExtra("NodePath");
-
-                DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
-
-                pkg.mobj = path;
-                processMsg(pkg);
-                break;
-            }
-            case DMIntent.TYPE_UNITEST_PROCESS_SCRIPT: {
-                String fileName = intent.getStringExtra(DMIntent.FIELD_FILENAME);
-                boolean isBinary = intent.getBooleanExtra(DMIntent.FIELD_IS_BINARY, false);
-
-                DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
-
-                pkg.mobj = fileName;
-                pkg.mbvalue = isBinary;
-                processMsg(pkg);
-                break;
-            }
         }
-    }
-
-    // private final IDmClientService.Stub mBinder = new IDmClientService.Stub()
-    // {
-
-    String setStringNode(String node, String value) {
-        if (mInitGood) {
-            return NativeDM.setStringNode(node, value);
-        }
-        return "DM Engine initialization failed";
-    }
-
-    String dumpTree(String node) {
-        if (mInitGood) {
-            return NativeDM.dumpTree(node);
-        }
-        return "DM Engine initialization failed";
-    }
-
-    // FIXME: this must be called from native code, right?
-    // FIXME: can native code ever throw RemoteException??
-    public String executePlugin(String node, String data) {
-        if (mInitGood) {
-            return NativeDM.executePlugin(node, data);
-        }
-        return "DM Engine initialization failed";
-    }
-
-    String getNodeInfo(String node) {
-        if (mInitGood) {
-            return NativeDM.getNodeInfo(node);
-        }
-        return "DM Engine initialization failed";
     }
 
     public int deleteNode(String node) {
@@ -622,31 +545,6 @@ public class DMClientService extends IntentService {
         return null;
     }
 
-    byte[] processScript(String fileName, boolean isBinary, DMSession session) {
-        if (DBG) logd("processScript");
-
-        DMConfigureDB configDB = getConfigDB();
-
-        if (session != null && configDB != null) {
-            boolean isDmAlertEnabled = configDB.isDmAlertEnabled();
-            session.getDMAlert().setUIMode(isDmAlertEnabled);
-            if (DBG) logd("isDmAlertEnabled=" + session.getDMAlert().getUIMode());
-        }
-
-        byte[] bResult = null;
-        if (mInitGood) {
-            int dmResult = 0;
-            bResult = NativeDM.processScript("localhost", fileName, isBinary, dmResult, session);
-            if (DBG) Log.d(TAG, "dmResult=" + dmResult);
-            if (bResult != null) {
-                if (DBG) Log.d(TAG, "result buf size=" + bResult.length);
-
-            }
-        }
-        return bResult;
-    }
-    //};
-
     // This is the object that receives interactions from clients. See
     // RemoteService for a more complete example.
     private final IBinder mBinder = new LocalBinder();
@@ -657,10 +555,6 @@ public class DMClientService extends IntentService {
         DMConfigureDB db = getConfigDB();   // wait for configure DB to initialize
         if (DBG) Log.d(TAG, "returning mBinder");
         return mBinder;
-    }
-
-    @Override
-    public void onLowMemory() {
     }
 
     /**
@@ -835,11 +729,11 @@ public class DMClientService extends IntentService {
         return true;
     }
 
-    private static void logd(String msg) {
+    static void logd(String msg) {
         Log.d(TAG, msg);
     }
 
-    private static void loge(String msg, Throwable tr) {
+    static void loge(String msg, Throwable tr) {
         Log.e(TAG, msg, tr);
     }
 }

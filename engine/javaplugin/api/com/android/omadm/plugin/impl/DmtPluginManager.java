@@ -83,8 +83,9 @@ public final class DmtPluginManager {
             try {
                 Intent intent = new Intent(mUid);
                 intent.putExtra("rootPath", mPath);
-		boolean currentPackageMatch = false;
-	        List<ResolveInfo> intentServices = sContext.getPackageManager().queryIntentServices(intent, 0);
+                boolean currentPackageMatch = false;
+                List<ResolveInfo> intentServices = sContext.getPackageManager()
+                        .queryIntentServices(intent, 0);
                 if (intentServices != null) {
                     for (ResolveInfo resolveInfo : intentServices) {
                         logd("getPackageName is: " + sContext.getPackageName());
@@ -105,11 +106,11 @@ public final class DmtPluginManager {
                     return;
                 }
 
-	        logd("Calling bindService: uid=\"" + mUid + "\" path=\"" + mPath + '"');
+                logd("Calling bindService: uid=\"" + mUid + "\" path=\"" + mPath + '"');
                 sContext.bindService(intent, mConnector,Context.BIND_AUTO_CREATE);
 
                 wait(10000);        // FIXME: wait not in loop!
-	        logd("Waiting is finished");
+                logd("Waiting is finished");
             } catch (Exception e) {
                 loge("exception in waitForConnection", e);
             }
@@ -442,16 +443,16 @@ public final class DmtPluginManager {
              */
             else if (retcode == ErrorCodes.SYNCML_DM_UNSUPPORTED_OPERATION) {
                 loge("Get feature not implemented on this node");
-            	String[] errString = new String[1];
-            	errString[0] = Integer.toString(retcode);
-            	return errString;
+                String[] errString = new String[1];
+                errString[0] = Integer.toString(retcode);
+                return errString;
             }
             
             else {
                 loge("Error occurred while doing a get on this node");
-            	String[] errString = new String[1];
-            	errString[0] = Integer.toString(retcode);
-            	return errString;
+                String[] errString = new String[1];
+                errString[0] = Integer.toString(retcode);
+                return errString;
             }
 
             //throw new DmtException(retcode, "Value is not set");
@@ -548,15 +549,13 @@ public final class DmtPluginManager {
                     StringBuilder tmpSB = new StringBuilder("");
                     DmtData data = tmpNode.getValue();
                     if (data != null) {
-                        ArrayList<String> nodeSubNodeNames = data.getNodeValue();
-                        if (nodeSubNodeNames != null) {
-                            for (String subNodeName : nodeSubNodeNames) {
-                                if (TextUtils.isEmpty(subNodeName)) {
-                                    loge("invalid interior node value for " + nodeSubNodeNames.toString() + "!!!!");
-                                    throw new DmtException("Invalid interior node value");
-                                } else {
-                                    tmpSB.append(subNodeName).append('\n');
-                                }
+                        Map<String, DmtData> childNodes = data.getChildNodeMap();
+                        for (String subNodeName : childNodes.keySet()) {
+                            if (TextUtils.isEmpty(subNodeName)) {
+                                loge("invalid interior node value for " + subNodeName + "!!!");
+                                throw new DmtException("Invalid interior node value");
+                            } else {
+                                tmpSB.append(subNodeName).append('\n');
                             }
                         }
                     }

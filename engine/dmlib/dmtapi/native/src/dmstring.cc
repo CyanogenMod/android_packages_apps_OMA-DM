@@ -83,6 +83,32 @@ DMString& DMString::operator += (CPCHAR szStr)
   return *this;
 }
 
+// append a single character
+DMString& DMString::operator += (char c)
+{
+  INT32 nLen1 = DmStrlen( *this );
+  INT32 nCurBuffer = m_pStr ? GetAdjustedLen(nLen1+1) : 0;
+
+  if (nCurBuffer > (nLen1 + 1))
+  {
+    m_pStr[nLen1] = c;
+    m_pStr[nLen1 + 1] = '\0';
+  }
+  else
+  {
+    char* pNewStr = (char*)DmAllocMem( GetAdjustedLen(nLen1 + 1 + 1));
+
+    if (pNewStr) {
+      DmStrcpy(pNewStr, c_str());
+      pNewStr[nLen1] = c;
+      pNewStr[nLen1 + 1] = '\0';
+    }
+    FreeAndSetNull(m_pStr);
+    m_pStr = pNewStr;
+  }
+  return *this;
+}
+
 void DMString::SetAt( INT32 nPos, char c )
 {
   if ( nPos < 0 || nPos >= (INT32)DmStrlen(c_str()) ) {
@@ -200,7 +226,7 @@ BOOLEAN DMString::Decode()
 
 BOOLEAN DMString::assign( CPCHAR pStr, INT32 nLen )
 {
-  if ( !pStr || !pStr[0] || nLen <= 0 ){
+  if (!pStr || !pStr[0] || nLen <= 0) {
     FreeAndSetNull(m_pStr);
     return TRUE;
   }
@@ -235,9 +261,14 @@ void DMString::trim()
   }
 }
 
-INT32 DMString::length()const
+INT32 DMString::length() const
 {
-  return m_pStr ? DmStrlen(m_pStr):0;
+  return m_pStr ? DmStrlen(m_pStr) : 0;
+}
+
+void DMString::clear()
+{
+  FreeAndSetNull(m_pStr);
 }
 
 CPCHAR DMString::detach()

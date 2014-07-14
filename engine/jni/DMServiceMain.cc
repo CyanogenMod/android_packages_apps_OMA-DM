@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // don't strip logging from release builds
 #define LOG_NDEBUG 0
 
@@ -16,43 +32,43 @@ int g_cancelSession;
 
 #define SET_RET_STATUS_BUF \
         jResult = jenv->NewByteArray(5); char szResult[5]; memset(szResult, 0, 5); \
-        sprintf(szResult, "%4d", ret_status); \
+        ::snprintf(szResult, 5, "%4d", ret_status); \
         jenv->SetByteArrayRegion(jResult, 0, 5, (const jbyte*)szResult)
 
-static void Dump( const char* buf, int size, boolean isBinary )
+static void Dump(const char* buf, int size, boolean isBinary)
 {
   if (!isBinary) {
     // just print the string
-    char* szBuf = new char [size+1];
+    char* szBuf = new char[size + 1];
 
     memcpy(szBuf, buf, size);
     szBuf[size] = 0;
-     
-    printf("The test Script error text:\n\n%s\n\n", szBuf);
+
+    LOGE("The test script error text:\n\n%s\n\n", szBuf);
   } else {
     int nOffset = 0;
- 
+
     while (size > 0) {
       int nLine = size > 16 ? 16 : size;
- 
+
       char s[250];
       int pos = 0;
- 
-      pos += sprintf( s+pos, "%04x:", nOffset );
- 
+
+      pos += ::snprintf(s + pos, (250 - pos), "%04x:", nOffset);
+
       for (int i = 0; i < nLine; i++) {
-        pos += sprintf( s+pos, " %02x", (unsigned int)((unsigned char) buf[i]) );
+        pos += ::snprintf(s + pos, (250 - pos), " %02x", (unsigned int)((unsigned char) buf[i]) );
       }
       for (int i = nLine; i < 16; i++) {
-        pos += sprintf( s+pos, "   " );
+        pos += ::snprintf(s + pos, (250 - pos), "   ");
       }
- 
-      pos += sprintf( s+pos, "  " );
-      for ( int i = 0; i < nLine; i++ ){
-        pos += sprintf( s+pos, "%c", (buf[i] > 31 ? buf[i] : '.') );
+
+      pos += ::snprintf(s + pos, (250 - pos), "  ");
+      for (int i = 0; i < nLine; i++) {
+        pos += ::snprintf(s + pos, (250 - pos), "%c", (buf[i] > 31 ? buf[i] : '.') );
       }
- 
-      printf( "%s\n", s );
+
+      LOGE("%s\n", s);
       buf += nLine;
       size -= nLine;
       nOffset += nLine;
@@ -62,38 +78,38 @@ static void Dump( const char* buf, int size, boolean isBinary )
 
 
 JNIEXPORT jint
-initialize(JNIEnv* env, jobject jobj)
+initialize(JNIEnv* /*env*/, jobject /*jobj*/)
 {
   LOGD("native initialize");
   if (!DmtTreeFactory::Initialize()) {
     LOGE("Failed to initialize DM\n");
-    return (jint)SYNCML_DM_FAIL;
+    return static_cast<jint>(SYNCML_DM_FAIL);
   }
 
-  return (jint)SYNCML_DM_SUCCESS;
+  return static_cast<jint>(SYNCML_DM_SUCCESS);
 }
 
 JNIEXPORT jint
-destroy(JNIEnv* env, jobject jobj)
+destroy(JNIEnv* /*env*/, jobject /*jobj*/)
 {
   LOGD("Enter destroy");
   if (DmtTreeFactory::Uninitialize() != SYNCML_DM_SUCCESS) {
     LOGE("Failed to uninitialize DM\n");
-    return (jint)SYNCML_DM_FAIL;
+    return static_cast<jint>(SYNCML_DM_FAIL);
   }
 
   LOGD("Leave destroy");
-  return SYNCML_DM_SUCCESS;
+  return static_cast<jint>(SYNCML_DM_SUCCESS);
 }
 
 JNIEXPORT jint
-parsePkg0(JNIEnv* env, jclass jclz, jbyteArray jPkg0, jobject jNotification)
+parsePkg0(JNIEnv* env, jclass, jbyteArray jPkg0, jobject jNotification)
 {
     LOGD("Enter parsePkg0");
     jclass notifClass = env->GetObjectClass(jNotification);
 
     if (jPkg0 == NULL) {
-        return SYNCML_DM_FAIL;
+        return static_cast<jint>(SYNCML_DM_FAIL);
     }
 
     jbyte* pkg0Buf = env->GetByteArrayElements(jPkg0, NULL);
@@ -104,7 +120,7 @@ parsePkg0(JNIEnv* env, jclass jclz, jbyteArray jPkg0, jobject jNotification)
     SYNCML_DM_RET_STATUS_T ret = DmtTreeFactory::ProcessNotification(p, (UINT8*)pkg0Buf, (INT32)pkg0Len, notif);
 
     jmethodID jSetServerID = env->GetMethodID( notifClass, "setServerID", "(Ljava/lang/String;)V");
-    jstring jServerID = env->NewStringUTF(notif.getServerID());
+    jstring jServerID = env->NewStringUTF(notif.getServerID().c_str());
     env->CallVoidMethod(jNotification, jSetServerID, jServerID);
 
     jmethodID jSetSessionID = env->GetMethodID( notifClass, "setSessionID", "(I)V");
@@ -122,12 +138,12 @@ parsePkg0(JNIEnv* env, jclass jclz, jbyteArray jPkg0, jobject jNotification)
     env->ReleaseByteArrayElements(jPkg0, pkg0Buf, 0);
 
     LOGD("Leave parsePkg0, ret: %d", ret);
-    return ret;
+    return static_cast<jint>(ret);
 }
 
 
-JNIEXPORT jint JNICALL startFotaClientSession
-  (JNIEnv *jenv, jclass jclz, jstring jServerId, jstring jAlertStr, jobject jdmobj)
+JNIEXPORT jint JNICALL startFotaClientSession(JNIEnv* jenv, jclass,
+        jstring jServerId, jstring jAlertStr, jobject jdmobj)
 {
     LOGV("In native startFotaClientSession\n");
 
@@ -142,32 +158,33 @@ JNIEXPORT jint JNICALL startFotaClientSession
         szDmAlertStr = jenv->GetStringUTFChars(jAlertStr, NULL);
     }
 
-    DmtPrincipal principal( szDmServerId );
+    DmtPrincipal principal(szDmServerId);
 
-    DMString alertURI = "./DevDetail/Ext/SystemUpdate";
-    DmtFirmAlert alert(alertURI, NULL, szDmAlertStr, "chr", NULL, NULL);
+    DMString alertURI("./DevDetail/Ext/SystemUpdate");
+    DMString strEmpty;
+    DmtFirmAlert alert(alertURI, strEmpty, szDmAlertStr, "chr", strEmpty, strEmpty);
     DmtSessionProp prop(alert, true);
 
     g_cancelSession = 0;
 
     ret_status = DmtTreeFactory::StartServerSession(principal, prop);
 
-    if (jAlertStr!=NULL) {
+    if (jAlertStr != NULL) {
         jenv->ReleaseStringUTFChars(jAlertStr, szDmAlertStr);
     }
 
     g_sessionObj = NULL;
     if (ret_status == SYNCML_DM_SUCCESS) {
         LOGV("Native startFotaClientSession return successfully\n");
-        return SYNCML_DM_SUCCESS;
+        return static_cast<jint>(SYNCML_DM_SUCCESS);
     } else {
         LOGE("Native startFotaClientSession return error %d\n", ret_status);
-        return ret_status;
+        return static_cast<jint>(ret_status);
     }
 }
 
-JNIEXPORT jint JNICALL startClientSession
-  (JNIEnv *jenv, jclass jclz, jstring jServerId, jobject jdmobj)
+JNIEXPORT jint JNICALL startClientSession(JNIEnv* jenv, jclass,
+        jstring jServerId, jobject jdmobj)
 {
     LOGV("In native startClientSession\n");
 
@@ -176,36 +193,35 @@ JNIEXPORT jint JNICALL startClientSession
 
     g_sessionObj = jdmobj;
     const char* szDmServerId = jenv->GetStringUTFChars(jServerId, NULL);
-    DmtPrincipal principal( szDmServerId );
+    DmtPrincipal principal(szDmServerId);
 
     DmtSessionProp prop(true);
 
     g_cancelSession = 0;
 
     ret_status = DmtTreeFactory::StartServerSession(principal, prop);
-    
+
     jenv->ReleaseStringUTFChars(jServerId, szDmServerId);
 
     g_sessionObj = NULL;
     if (ret_status == SYNCML_DM_SUCCESS) {
         LOGV("Native startClientSession return successfully\n");
-        return SYNCML_DM_SUCCESS;
     } else {
         LOGV("Native startClientSession return error %d\n", ret_status);
-        return ret_status;
     }
+    return static_cast<jint>(ret_status);
 }
 
-JNIEXPORT jint JNICALL startFotaServerSession
-  (JNIEnv *jenv, jclass jclz, jstring jServerId, jint sessionID, jobject jdmobj)
+JNIEXPORT jint JNICALL startFotaServerSession(JNIEnv* jenv, jclass,
+        jstring jServerId, jint sessionID, jobject jdmobj)
 {
     LOGV("In native startFotaServerSession\n");
 
     g_sessionObj = jdmobj;
 
     const char* szDmServerId = jenv->GetStringUTFChars(jServerId, NULL);
-    DmtPrincipal principal( szDmServerId );
-    DmtSessionProp prop((UINT16)sessionID, true);
+    DmtPrincipal principal(szDmServerId);
+    DmtSessionProp prop(static_cast<UINT16>(sessionID), true);
 
     g_cancelSession = 0;
 
@@ -220,18 +236,18 @@ JNIEXPORT jint JNICALL startFotaServerSession
     } else {
         LOGV("Native startFotaServerSession return error %d\n", ret_status);
     }
-    return ret_status;
+    return static_cast<jint>(ret_status);
 }
 
-JNIEXPORT jint JNICALL startFotaNotifySession(JNIEnv *jenv, jclass jclz,
-        jstring result, jstring pkgURI, jstring alertType, 
+JNIEXPORT jint JNICALL startFotaNotifySession(JNIEnv* jenv, jclass,
+        jstring result, jstring pkgURI, jstring alertType,
         jstring serverID, jstring correlator, jobject jdmobj)
 {
     g_sessionObj = jdmobj;
 
     const char* szResult = jenv->GetStringUTFChars(result, NULL);
     const char* szPkgURI = jenv->GetStringUTFChars(pkgURI, NULL);
-    const char* szAlertType=jenv->GetStringUTFChars(alertType, NULL);
+    const char* szAlertType = jenv->GetStringUTFChars(alertType, NULL);
     const char* szDmServerId = jenv->GetStringUTFChars(serverID, NULL);
     const char* szCorrelator = jenv->GetStringUTFChars(correlator, NULL);
 
@@ -253,11 +269,10 @@ JNIEXPORT jint JNICALL startFotaNotifySession(JNIEnv *jenv, jclass jclz,
     g_sessionObj = NULL;
     if (dm_result == SYNCML_DM_SUCCESS) {
         LOGV("Native startFotaNotifySession return successfully\n");
-        return SYNCML_DM_SUCCESS;
     } else {
         LOGV("Native startFotaNotifySession return error %d\n", dm_result);
-        return dm_result;
     }
+    return static_cast<jint>(dm_result);
 }
 
 jobject getNetConnector()
@@ -265,29 +280,29 @@ jobject getNetConnector()
     JNIEnv* env = android::AndroidRuntime::getJNIEnv();
 
     jclass jdmSessionClz = env->GetObjectClass(g_sessionObj);
-    jmethodID jgetNet = env->GetMethodID(jdmSessionClz, 
-            "getNetConnector", 
+    jmethodID jgetNet = env->GetMethodID(jdmSessionClz,
+            "getNetConnector",
             "()Lcom/android/omadm/service/DMHttpConnector;");
     return env->CallObjectMethod(g_sessionObj, jgetNet);
 }
 
-jobject getDmAlert(JNIEnv *env)
+jobject getDmAlert(JNIEnv* env)
 {
    LOGD(("DM Alert: enter getDmAlert()"));
-   if ( NULL == g_sessionObj ) {
+   if (NULL == g_sessionObj) {
        LOGE(("DM Alert: g_sessionObj is NULL!"));
        return NULL;
    }
 
    jclass jdmSessionClz = env->GetObjectClass(g_sessionObj);
-   if ( NULL == jdmSessionClz ) {
+   if (NULL == jdmSessionClz) {
        LOGE(("DM Alert: env->GetObjectClass(g_sessionObj) failed!"));
        return NULL;
    }
    LOGD(("DM Alert: success env->GetObjectClass(...)"));
 
-   jmethodID jdmGetDmAlert = env->GetMethodID(jdmSessionClz, 
-            "getDmAlert", 
+   jmethodID jdmGetDmAlert = env->GetMethodID(jdmSessionClz,
+            "getDmAlert",
             "()Lcom/android/omadm/service/DmAlert;");
    if ( NULL == jdmGetDmAlert ) {
        LOGE(("DM Alert: env->GetMethodID(jdmSessionClz) failed!"));
@@ -298,23 +313,23 @@ jobject getDmAlert(JNIEnv *env)
    return env->CallObjectMethod(g_sessionObj, jdmGetDmAlert);
 }
 
-JNIEXPORT jint JNICALL cancelSession(JNIEnv *jEnv, jclass jclz)
+JNIEXPORT jint JNICALL cancelSession(JNIEnv*, jclass)
 {
     g_cancelSession = 1;
-    return SYNCML_DM_SUCCESS;
+    return static_cast<jint>(SYNCML_DM_SUCCESS);
 }
 
-JNIEXPORT jstring JNICALL parseBootstrapServerId
-  (JNIEnv *jenv, jclass, jbyteArray jMsgBuf, jboolean isWbxml)
+JNIEXPORT jstring JNICALL parseBootstrapServerId(JNIEnv* jenv, jclass, jbyteArray jMsgBuf,
+        jboolean isWbxml)
 {
     jint retCode = 0;
     jstring jServerId = NULL;
-    
+
     SYNCML_DM_RET_STATUS_T dm_ret_status;
-    
+
     jbyte* jBuf = jenv->GetByteArrayElements(jMsgBuf, NULL);
     jsize jBufSize = jenv->GetArrayLength(jMsgBuf);
-    
+
     DmtPrincipal principal("DM_BOOTSTRAP");
     DMString strServerId;
     dm_ret_status = DmtTreeFactory::Bootstrap(principal, (const UINT8*)jBuf, jBufSize, isWbxml,
@@ -322,36 +337,35 @@ JNIEXPORT jstring JNICALL parseBootstrapServerId
 
     LOGD("parseBootstrapServerId dm_ret_status: %d", dm_ret_status);
 
-    if (dm_ret_status == SYNCML_DM_SUCCESS && strServerId != NULL && strServerId.length() > 0) {
+    if (dm_ret_status == SYNCML_DM_SUCCESS && !strServerId.empty()) {
         LOGD("parseBootstrapServerId returns strServerId: %s", strServerId.c_str());
         jServerId = jenv->NewStringUTF(strServerId.c_str());
     }
-                        
+
     return jServerId;
 }
 
-JNIEXPORT jint JNICALL processBootstrapScript
-  (JNIEnv *jenv, jclass, jbyteArray jMsgBuf, jboolean isWbxml, jstring jServerId)
+JNIEXPORT jint JNICALL processBootstrapScript(JNIEnv* jenv, jclass, jbyteArray jMsgBuf, jboolean isWbxml, jstring jServerId)
 {
     SYNCML_DM_RET_STATUS_T dm_ret_status;
     const char* szDmServerId = jenv->GetStringUTFChars(jServerId, NULL);
-    
+
     jbyte* jBuf = jenv->GetByteArrayElements(jMsgBuf, NULL);
     jsize jBufSize = jenv->GetArrayLength(jMsgBuf);
-    
+
     DmtPrincipal principal("DM_BOOTSTRAP");
-    DMString strServerId = szDmServerId;
-    dm_ret_status = DmtTreeFactory::Bootstrap( 
+    DMString strServerId(szDmServerId);
+    dm_ret_status = DmtTreeFactory::Bootstrap(
                     principal, (const UINT8*)jBuf, jBufSize, isWbxml, true, strServerId);
 
-    LOGD("processBootstrapScript dm_ret_status: %d", dm_ret_status);
-          
-    return dm_ret_status;
+    LOGD("processBootstrapScript dm_ret_status: %d", static_cast<jint>(dm_ret_status));
+
+    return static_cast<jint>(dm_ret_status);
 }
 
 
-JNIEXPORT jbyteArray JNICALL processScript
-  (JNIEnv *jenv, jclass, jstring jServerId, jstring jFileName, jboolean jIsBinary, jint jRetCode, jobject jdmobj)
+JNIEXPORT jbyteArray JNICALL processScript(JNIEnv* jenv, jclass, jstring jServerId,
+        jstring jFileName, jboolean jIsBinary, jint /*jRetCode*/, jobject jdmobj)
 {
   LOGV("In native processScript\n");
   g_sessionObj = jdmobj;
@@ -387,20 +401,20 @@ JNIEXPORT jbyteArray JNICALL processScript
 
   // assume 100k is enough
   const int c_nSize = 100 * 1024;
-  char* szBuf = new char [c_nSize];
+  char* szBuf = new char[c_nSize];
 
   if (szBuf == NULL) {
     ret_status = SYNCML_DM_DEVICE_FULL;
     SET_RET_STATUS_BUF;
     return jResult;
   }
-    
+
   int buf_size = fread(szBuf, 1, c_nSize, fd );
-  printf("native processScript read %d bytes, jIsBinary=%d\n", buf_size, jIsBinary);
+  LOGE("native processScript read %d bytes, jIsBinary=%d\n", buf_size, jIsBinary);
 
 
-  if ( buf_size > 0 ) {
-    DmtPrincipal principal( szDmServerId );
+  if (buf_size > 0) {
+    DmtPrincipal principal(szDmServerId);
     DMVector<UINT8> bResult;
 
     ret_status = DmtTreeFactory::ProcessScript(principal, (const UINT8*)szBuf, buf_size, jIsBinary, bResult);
@@ -409,10 +423,12 @@ JNIEXPORT jbyteArray JNICALL processScript
     int resultSize = bResult.size();
 
     if (resultSize > 0) {
+        //Dump((const char*)&bResult.front(), resultSize, jIsBinary);
         Dump((const char*)bResult.get_data(), resultSize, jIsBinary);
 
         jResult = jenv->NewByteArray(resultSize);
 
+        //jenv->SetByteArrayRegion(jResult, 0, resultSize, (const jbyte*)&bResult.front());
         jenv->SetByteArrayRegion(jResult, 0, resultSize, (const jbyte*)bResult.get_data());
     }
     else {
@@ -430,9 +446,9 @@ JNIEXPORT jbyteArray JNICALL processScript
   jenv->ReleaseStringUTFChars(jFileName, szFileName);
 
 
-  LOGV("Native processScript return code %d\n", ret_status);
+  LOGV("Native processScript return code %d\n", static_cast<jint>(ret_status));
   g_sessionObj = NULL;
-  
+
   return jResult;
 }
 
@@ -462,7 +478,7 @@ static JNINativeMethod gMethods[] = {
     {"parseBootstrapServerId", "([BZ)Ljava/lang/String;", (void*)parseBootstrapServerId},
 };
 
-int registerNatives(JNIEnv *env)
+int registerNatives(JNIEnv* env)
 {
     jclass clazz = env->FindClass(javaDMEnginePackage);
     if (clazz == NULL)
@@ -478,7 +494,7 @@ int registerNatives(JNIEnv *env)
 }
 
 JNIEXPORT jint JNICALL
-JNI_OnLoad(JavaVM* vm, void* reserved)
+JNI_OnLoad(JavaVM* /*vm*/, void* /*reserved*/)
 {
     LOGD("In JNI_OnLoad");
     JNIEnv* env = android::AndroidRuntime::getJNIEnv();
@@ -490,4 +506,3 @@ JNI_OnLoad(JavaVM* vm, void* reserved)
 
     return (registerNatives(env) == JNI_TRUE) ? JNI_VERSION_1_6 : -1;
 }
-

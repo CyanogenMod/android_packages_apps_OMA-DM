@@ -23,7 +23,7 @@
  * Constructor
  *
  **/
-DMServiceAlert::DMServiceAlert():m_jDmEnv(NULL), m_jDmAlertCls(NULL), m_jDmAlertObj(NULL)
+DMServiceAlert::DMServiceAlert() : m_jDmEnv(NULL), m_jDmAlertCls(NULL), m_jDmAlertObj(NULL)
 {
    LOGD("DMServiceAlert: enter  DMServiceAlert::DMServiceAlert()");
    m_jDmEnv = android::AndroidRuntime::getJNIEnv();
@@ -76,14 +76,11 @@ DMServiceAlert::~DMServiceAlert()
  * SYNCML_DM_FAIL or other more specific error codes.
  **/
 SYNCML_DM_RET_STATUS_T
-DMServiceAlert::showDisplayAlert( INT32 minDisplayTime,
-                                  CPCHAR msg,
-                                  INT32 title,
-                                  INT32 icon)
+DMServiceAlert::showDisplayAlert(INT32 minDisplayTime, const DMString& msg, INT32 title, INT32 icon)
 {
    LOGD("DMServiceAlert: enter showDisplayAlert()");
 
-   if ( isJvmNull() ) {
+   if (isJvmNull()) {
       LOGE("DMServiceAlert: JVM validation failed!");
       return SYNCML_DM_FAIL;
    }
@@ -91,14 +88,14 @@ DMServiceAlert::showDisplayAlert( INT32 minDisplayTime,
    m_jDmAlertMID = m_jDmEnv->GetMethodID(m_jDmAlertCls,
                                          "showDisplayAlert",
                                          "(ILjava/lang/String;II)I");
-   if ( NULL == m_jDmAlertMID ) {
+   if (NULL == m_jDmAlertMID) {
       LOGE("DMServiceAlert: m_jDmEnv->GetMethodID(showDisplayAlert) failed");
       return SYNCML_DM_FAIL;
    }
 
    LOGD("DMServiceAlert: m_jDmEnv->GetMethodID(showDisplayAlert) success.");
    jint t = minDisplayTime;
-   jstring m = m_jDmEnv->NewStringUTF(msg);
+   jstring m = m_jDmEnv->NewStringUTF(msg.c_str());
    jint tl = title;
    jint ic = icon;
 
@@ -106,7 +103,8 @@ DMServiceAlert::showDisplayAlert( INT32 minDisplayTime,
    m_jDmEnv->DeleteLocalRef(m);
    LOGD("DMServiceAlert: DisplayAlert result: %d", r);
 
-   return r != DM_SERVICE_ALERT_RESP_FAIL ? SYNCML_DM_SUCCESS: SYNCML_DM_FAIL;
+   return (r != DM_SERVICE_ALERT_RESP_FAIL)
+            ? SYNCML_DM_SUCCESS : SYNCML_DM_FAIL;
 };
 
 /**
@@ -120,8 +118,7 @@ DMServiceAlert::showDisplayAlert( INT32 minDisplayTime,
  * SYNCML_DM_FAIL or other more specific error codes.
  **/
 SYNCML_DM_RET_STATUS_T
-DMServiceAlert::showConfirmAlert( INT32 maxDisplayTime,
-                                  CPCHAR msg,
+DMServiceAlert::showConfirmAlert(INT32 maxDisplayTime, const DMString& msg,
                                   XPL_DM_ALERT_RES_T defaultResponse,
                                   XPL_DM_ALERT_RES_T *response,
                                   INT32 title,
@@ -129,13 +126,13 @@ DMServiceAlert::showConfirmAlert( INT32 maxDisplayTime,
 {
    LOGD("DMServiceAlert: enter showConfirmAlert()");
 
-   if ( isJvmNull() ) {
+   if (isJvmNull()) {
       LOGE("DMServiceAlert: JVM validation failed!");
       return SYNCML_DM_FAIL;
    }
 
  #ifdef DM_SDMSERVICES
-   if ( strlen(msg) > DM_SERVICE_ALERT_MAX_MSG_SIZE ){
+   if (strlen(msg) > DM_SERVICE_ALERT_MAX_MSG_SIZE) {
         LOGD("DMServiceAlert: showConfirmAlert MAX UI ALERT STRING SIZE is 250");
         return SYNCML_DM_BAD_REQUEST;
    }
@@ -158,7 +155,7 @@ DMServiceAlert::showConfirmAlert( INT32 maxDisplayTime,
 
    LOGD("DMServiceAlert: m_jDmEnv->GetMethodID(showConfirmAlert) success.");
    jint t = maxDisplayTime;
-   jstring m = m_jDmEnv->NewStringUTF(msg);
+   jstring m = m_jDmEnv->NewStringUTF(msg.c_str());
    jint tl = title;
    jint ic = icon;
 
@@ -166,14 +163,15 @@ DMServiceAlert::showConfirmAlert( INT32 maxDisplayTime,
    m_jDmEnv->DeleteLocalRef(m);
    LOGD("DMServiceAlert: ConfirmAlert result: %d", r);
 
-   if ( r == DM_SERVICE_ALERT_RESP_TIMEOUT ) {
+   if (r == DM_SERVICE_ALERT_RESP_TIMEOUT) {
       *response = defaultResponse;
    }
    else {
       *response = (XPL_DM_ALERT_RES_T) r;
    }
 
-   return r != DM_SERVICE_ALERT_RESP_FAIL ? SYNCML_DM_SUCCESS: SYNCML_DM_FAIL;
+   return (r != DM_SERVICE_ALERT_RESP_FAIL)
+            ? SYNCML_DM_SUCCESS : SYNCML_DM_FAIL;
 }
 
 /**
@@ -191,8 +189,8 @@ DMServiceAlert::showConfirmAlert( INT32 maxDisplayTime,
  **/
 SYNCML_DM_RET_STATUS_T
 DMServiceAlert::showTextInputAlert( INT32 maxDisplayTime,
-                                    CPCHAR msg,
-                                    CPCHAR defaultResponse,
+                                    const DMString& msg,
+                                    const DMString& defaultResponse,
                                     INT32 maxLength,
                                     XPL_DM_ALERT_INPUT_T inputType,
                                     XPL_DM_ALERT_ECHO_T echoType,
@@ -202,7 +200,7 @@ DMServiceAlert::showTextInputAlert( INT32 maxDisplayTime,
 {
    LOGD("DMServiceAlert: enter showTextInputAlert()");
 
-   if ( isJvmNull() ) {
+   if (isJvmNull()) {
       LOGE("DMServiceAlert: JVM validation failed!");
       return SYNCML_DM_FAIL;
    }
@@ -217,8 +215,8 @@ DMServiceAlert::showTextInputAlert( INT32 maxDisplayTime,
 
    LOGD("DMServiceAlert: m_jDmEnv->GetMethodID(showTextInputAlert) success.");
    jint t = maxDisplayTime;
-   jstring m = m_jDmEnv->NewStringUTF(msg);
-   jstring d = m_jDmEnv->NewStringUTF(defaultResponse);
+   jstring m = m_jDmEnv->NewStringUTF(msg.c_str());
+   jstring d = m_jDmEnv->NewStringUTF(defaultResponse.c_str());
    jint l = maxLength;
    jint i = (int)inputType;
    jint e = (int)echoType;
@@ -242,8 +240,8 @@ DMServiceAlert::showTextInputAlert( INT32 maxDisplayTime,
       return SYNCML_DM_FAIL;
    }
 
-   response->action = (XPL_DM_ALERT_RES_T)a;
-   if ( a == DM_SERVICE_ALERT_RESP_TIMEOUT ) {
+   response->action = (XPL_DM_ALERT_RES_T) a;
+   if (a == DM_SERVICE_ALERT_RESP_TIMEOUT) {
       response->response = defaultResponse;
    }
    else {
@@ -253,29 +251,14 @@ DMServiceAlert::showTextInputAlert( INT32 maxDisplayTime,
    return SYNCML_DM_SUCCESS;
 }
 
-/**
- * Display a single choice message box for user to pick up one entry.
- *
- * @param maxDisplayTime maximum display time (for timeout), in seconds.
- * @param msg messages to display
- * @param choices a string vector to hold text for each choice
- * @param defaultResponse default user action when timeout
- * @param response hold user's response action and selected choice.
- * @return Upon successful completion, the SYNCML_DM_SUCCESS is returned, otherwise
- * SYNCML_DM_FAIL or other more specific error codes.
- **/
 SYNCML_DM_RET_STATUS_T
-DMServiceAlert::showSingleChoiceAlert( INT32 maxDisplayTime,
-                                       CPCHAR msg,
-                                       DMStringVector & choices,
-                                       INT32 defaultResponse,
-                                       XPL_DM_ALERT_SCHOICE_RES_T * response,
-                                       INT32 title,
-                                       INT32 icon)
+DMServiceAlert::showSingleChoiceAlert(INT32 maxDisplayTime, const DMString& msg,
+        const DMStringVector& choices, INT32 defaultResponse,
+        XPL_DM_ALERT_SCHOICE_RES_T* response, INT32 title, INT32 icon)
 {
    LOGD("DMServiceAlert: enter showSingleChoiceAlert()");
 
-   if ( isJvmNull() ) {
+   if (isJvmNull()) {
       LOGE("DMServiceAlert: JVM validation failed!");
       return SYNCML_DM_FAIL;
    }
@@ -290,7 +273,7 @@ DMServiceAlert::showSingleChoiceAlert( INT32 maxDisplayTime,
 
    LOGD("DMServiceAlert: m_jDmEnv->GetMethodID(showSingleChoiceAlert) success.");
    jint t = maxDisplayTime;
-   jstring m = m_jDmEnv->NewStringUTF(msg);
+   jstring m = m_jDmEnv->NewStringUTF(msg.c_str());
    int size = choices.size();
    jobjectArray c = m_jDmEnv->NewObjectArray(size, m_jDmEnv->FindClass("java/lang/String"), NULL);
    for ( int i = 0; i < size; i ++ ) {
@@ -301,6 +284,7 @@ DMServiceAlert::showSingleChoiceAlert( INT32 maxDisplayTime,
    jint ic = icon;
 
    jstring r = (jstring)m_jDmEnv->CallObjectMethod(m_jDmAlertObj, m_jDmAlertMID, t, m, c, d, tl, ic);
+    // FIXME: delete local refs to object array strings
    m_jDmEnv->DeleteLocalRef(m);
 
    const char *rlt = m_jDmEnv->GetStringUTFChars(r, 0);
@@ -312,13 +296,13 @@ DMServiceAlert::showSingleChoiceAlert( INT32 maxDisplayTime,
    LOGD("DMServiceAlert: SingleChoiceAlert result: %s", rlt);
 
    int a = rlt[0] - '0';
-   if ( a == DM_SERVICE_ALERT_RESP_FAIL ) {
+   if (a == DM_SERVICE_ALERT_RESP_FAIL) {
       LOGE("DMServiceAlert: SingleChoiceAlert return fail!");
       return SYNCML_DM_FAIL;
    }
 
    response->action = (XPL_DM_ALERT_RES_T)a;
-   if ( a == DM_SERVICE_ALERT_RESP_TIMEOUT ) {
+   if (a == DM_SERVICE_ALERT_RESP_TIMEOUT) {
       response->response = defaultResponse;
    }
    else {
@@ -328,31 +312,15 @@ DMServiceAlert::showSingleChoiceAlert( INT32 maxDisplayTime,
    return SYNCML_DM_SUCCESS;
 }
 
-/**
- * Display a multiple choice message box for user to pick up zero to many entry.
- *
- * @param maxDisplayTime maximum display time (for timeout), in seconds.
- * @param msg messages to display
- * @param choices a string vector to hold text for each choice
- * @param defaultResponse default user action when timeout
- * @param defaultResponses holds default response in an array of string representation of
- * selected indexes (starting from 1)
- * @param response hold user's response action and selected choice.
- * @return Upon successful completion, the SYNCML_DM_SUCCESS is returned, otherwise
- * SYNCML_DM_FAIL or other more specific error codes.
- **/
+
 SYNCML_DM_RET_STATUS_T
-DMServiceAlert::showMultipleChoiceAlert( INT32 maxDisplayTime,
-                                         CPCHAR msg,
-                                         DMStringVector & choices,
-                                         DMStringVector & defaultResponses,
-                                         XPL_DM_ALERT_MCHOICE_RES_T * response,
-                                         INT32 title,
-                                         INT32 icon)
+DMServiceAlert::showMultipleChoiceAlert(INT32 maxDisplayTime, const DMString& msg,
+        const DMStringVector& choices, const DMStringVector& defaultResponses,
+        XPL_DM_ALERT_MCHOICE_RES_T* response, INT32 title, INT32 icon)
 {
    LOGD("DMServiceAlert: enter showMultipleChoiceAlert()");
 
-   if ( isJvmNull() ) {
+   if (isJvmNull()) {
       LOGE("DMServiceAlert: JVM validation failed!");
       return SYNCML_DM_FAIL;
    }
@@ -367,13 +335,13 @@ DMServiceAlert::showMultipleChoiceAlert( INT32 maxDisplayTime,
 
    LOGD("DMServiceAlert: m_jDmEnv->GetMethodID(showMultipleChoiceAlert) success.");
    jint t = maxDisplayTime;
-   jstring m = m_jDmEnv->NewStringUTF(msg);
+   jstring m = m_jDmEnv->NewStringUTF(msg.c_str());
 
    int size = choices.size();
    LOGD("DMServiceAlert: showMultipleChoiceAlert choices size: %d", size);
    jclass s = m_jDmEnv->FindClass("java/lang/String");
    jobjectArray c = m_jDmEnv->NewObjectArray(size, s, NULL);
-   for ( int i = 0; i < size; i ++ ) {
+   for (int i = 0; i < size; ++i) {
       m_jDmEnv->SetObjectArrayElement(c, i, m_jDmEnv->NewStringUTF(choices[i].c_str()));
    }
 
@@ -381,11 +349,11 @@ DMServiceAlert::showMultipleChoiceAlert( INT32 maxDisplayTime,
    jboolean ds[size];
    int dsize = defaultResponses.size();
    LOGD("DMServiceAlert: showMultipleChoiceAlert default choices size: %d", dsize);
-   for ( int i = 0; i < size; i ++ ) {
+   for (int i = 0; i < size; ++i) {
       ds[i] = false;
    }
    int idx = 0;
-   for ( int i = 0; i < dsize; i++ ) {
+   for (int i = 0; i < dsize; ++i) {
       idx = atoi(defaultResponses[i].c_str()) - 1;
       if ( idx < size ) {
          ds[idx] = true;
@@ -397,6 +365,7 @@ DMServiceAlert::showMultipleChoiceAlert( INT32 maxDisplayTime,
    jint ic = icon;
 
    jint r = m_jDmEnv->CallIntMethod(m_jDmAlertObj, m_jDmAlertMID, t, m, c, d, tl, ic);
+    // FIXME: delete local refs to object array strings
    m_jDmEnv->DeleteLocalRef(m);
 
    if ( r == DM_SERVICE_ALERT_RESP_FAIL ) {
@@ -405,8 +374,8 @@ DMServiceAlert::showMultipleChoiceAlert( INT32 maxDisplayTime,
    }
    LOGD("DMServiceAlert: MultiChoiceAlert result: %d", r);
 
-   response->action = (XPL_DM_ALERT_RES_T)r;
-   if ( r == DM_SERVICE_ALERT_RESP_TIMEOUT ) {
+   response->action = (XPL_DM_ALERT_RES_T) r;
+   if (r == DM_SERVICE_ALERT_RESP_TIMEOUT) {
       for ( int i = 0; i < dsize; i++ ) {
          response->responses.push_back(defaultResponses[i].c_str());
       }

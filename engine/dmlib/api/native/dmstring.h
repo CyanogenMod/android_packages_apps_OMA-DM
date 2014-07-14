@@ -42,7 +42,7 @@ class DMString
   /**
   * Default constructor - no memory allocation performed.
   */
-  DMString(){  m_pStr = (char*)XPL_NULL;}
+  DMString() {m_pStr = (char*)XPL_NULL;}
 
   /**
   * Construct a string based on input string (similar to strdup()). The memory for the size of parameter "szStr" will be allocated.
@@ -242,6 +242,19 @@ class DMString
   DMString& operator += (CPCHAR szStr);
 
   /**
+  * String concatenation
+  * \par Sync (or) Async:
+  * This is a Synchronous function.
+  * \par Secure (or) Non-Secure (or) N/A:
+  * This is a Non-Secure function.
+  * \param szStr [in] - pointer to null terminated string
+  * \return reference to constant DMString result of concatenation
+  * \par Prospective Clients:
+  * Internal Classes.
+  */
+  DMString& operator += (char c);
+
+  /**
   * Gets  buffer 
   * \par Sync (or) Async:
   * This is a Synchronous function.
@@ -303,7 +316,7 @@ class DMString
   * \par Prospective Clients:
   * All potential applications that require configuration settings and Internal Classes.
   */
-  BOOLEAN  assign( CPCHAR pStr, INT32 nLen );
+  BOOLEAN assign(CPCHAR pStr, INT32 nLen);
   
   /**
   * Gets rid of the white space at the beginning and at the end of the string.
@@ -316,6 +329,16 @@ class DMString
   */
   void trim();
 
+  /**
+  * Clears the string contents.
+  * \par Sync (or) Async:
+  * This is a Synchronous function.
+  * \par Secure (or) Non-Secure (or) N/A:
+  * This is a Non-Secure function.
+  * \par Prospective Clients:
+  * All potential applications that require configuration settings and Internal Classes.
+  */
+  void clear();
  
   /** 
   * URI encoding/decoding support. Performs encoding of non-standard URI symbols according to the RFC 2396
