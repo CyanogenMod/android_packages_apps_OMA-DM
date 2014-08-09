@@ -164,6 +164,11 @@
             <intent-filter>
                 <action android:name="com.android.omadm.service.client_initiated_fota"/>
             </intent-filter>
+
+            <!-- event to handle DM session cancel request -->
+            <intent-filter>
+                <action android:name="com.android.omadm.service.cancel_dm_session"/>
+            </intent-filter>
         </receiver>
 
         <!-- receives "com.android.omadm.service.pkg0_alert_dlg", pkg0_info_dlg, update_cancel_dlg -->

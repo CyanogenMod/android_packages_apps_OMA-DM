@@ -150,6 +150,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
             Log.d(TAG, "server URL: " + hostUrl + " proxy address: " + proxyAddress);
             DMHelper.setServerUrl(context, hostUrl);
             DMHelper.setProxyHostname(context, proxyAddress);
+        } else if (action.equals(DMIntent.ACTION_CANCEL_SESSION)) {
+            // create intent and start DM service
+            Intent newIntent = new Intent(DMIntent.LAUNCH_INTENT);
+            newIntent.putExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_CANCEL_DM_SESSION);
+            Log.d(TAG, "cancelling DM Session");
+            newIntent.setClass(context, DMClientService.class);
+            context.startService(newIntent);
         }
     }
 

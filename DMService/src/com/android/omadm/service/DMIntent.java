@@ -77,6 +77,9 @@ public interface DMIntent {
     // set server hostname info
     String ACTION_SET_SERVER_CONFIG = "com.android.omadm.service.set_server_config";
 
+    // cancel DM session
+    String ACTION_CANCEL_SESSION = "com.android.omadm.service.cancel_dm_session";
+
     int TYPE_UNKNOWN = 0;
 
     int TYPE_PKG0_NOTIFICATION = 1;
