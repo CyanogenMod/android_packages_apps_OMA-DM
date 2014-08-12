@@ -130,6 +130,7 @@ public class DMHttpConnector {
                 if (!TextUtils.isEmpty(serverUrl)) {
                     if (DBG) logd("replacing URL with Sprint URL: " + serverUrl);
                     url = new URL(serverUrl);
+                    urlString = serverUrl;
                     if (DBG) logd("new URL is " + url);
                 }
             }
