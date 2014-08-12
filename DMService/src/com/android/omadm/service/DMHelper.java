@@ -134,9 +134,8 @@ final class DMHelper {
 
     public static final String SERVER_ID_KEY = "serverID";
 
-    // --- Key used for storing fota apn interface name ---//
-    public static final String APN_INTERFACE_NAME_KEY = "interface";
-
+    // --- Key used for storing hostname override for Sprint ---//
+    public static final String SERVER_HOSTNAME_OVERRIDE_KEY = "serverHostname";
 
     //--- Keys used for storing imei ---//
     public static final String IMEI_PREFERENCE_KEY = "imeivalue";
@@ -278,26 +277,32 @@ final class DMHelper {
 
     // set Sprint server URL
     public static void setServerUrl(Context context, String url) {
-        SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
+        Log.d(TAG, "setServerUrl: " + url);
+        SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         p.edit().putString(MESSAGE_SERVER_URL_KEY, url).apply();
     }
 
     // set Sprint proxy hostname
     public static void setProxyHostname(Context context, String hostname) {
-        SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
+        Log.d(TAG, "setProxyHostname: " + hostname);
+        SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         p.edit().putString(MESSAGE_PROXY_HOSTNAME_KEY, hostname).apply();
     }
 
     // get Sprint server URL
     public static String getServerUrl(Context context) {
-        SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
-        return p.getString(MESSAGE_SERVER_URL_KEY, null);
+        SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
+        String url = p.getString(MESSAGE_SERVER_URL_KEY, null);
+        Log.d(TAG, "getServerUrl: " + url);
+        return url;
     }
 
     // get Sprint proxy hostname
     public static String getProxyHostname(Context context) {
-        SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
-        return p.getString(MESSAGE_PROXY_HOSTNAME_KEY, null);
+        SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
+        String hostname = p.getString(MESSAGE_PROXY_HOSTNAME_KEY, null);
+        Log.d(TAG, "getProxyHostname: " + hostname);
+        return hostname;
     }
 
     // check if message is expired; compares current time with the timestamp
