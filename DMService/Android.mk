@@ -6,8 +6,6 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := src/com/android/omadm/service/DMIntent.java  \
                    src/com/android/omadm/service/DMResult.java  \
                    src/com/android/omadm/service/DMSettingsHelper.java \
-                   src/com/android/omadm/service/DMOverlayHelper.java \
-                   src/com/android/omadm/service/DMXmlOverlay.java \
                    src/com/android/omadm/service/DMDatabaseTable.java \
 
 LOCAL_CERTIFICATE := platform
