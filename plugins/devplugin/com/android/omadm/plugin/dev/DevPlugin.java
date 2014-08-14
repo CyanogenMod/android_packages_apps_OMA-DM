@@ -119,33 +119,12 @@ public class DevPlugin extends DmtBasePlugin {
             logd("get ./DevDetail/DevTyp = " + DevTyp);
             data = new DmtData(DevTyp);
         } else if ("./DevInfo/DevId".equals(path)) {
-            String strIMEI = readValueFromFile("DevId");
-            logd("DevId read from shared file:" + strIMEI);
             TelephonyManager tm = (TelephonyManager) mContext
                     .getSystemService(Context.TELEPHONY_SERVICE);
-            if (strIMEI == null) {
-                // FIXME commented out: getGsmImei() is currently broken
-                //  if (isPhoneTypeLTE()) {
-                //    strIMEI = getGsmImei();
-                //  } else {
-                    strIMEI = tm.getDeviceId();
-                //  }
-                logd("DevId got from TelephonyManager:" + strIMEI);
-            }
-            strIMEI = strIMEI.toUpperCase(Locale.US);
-            // FIXME: remove this commented out code
-//            if (tm.getCurrentPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) {
-//                if (isPhoneTypeLTE()) {
-//                    logd("4G Based device, sending IMEI");
-//                    data = new DmtData("IMEI:" + strIMEI);
-//                } else {
-            logd("MEID Based device");
-                    data = new DmtData("MEID:" + strIMEI);
-//                }
-//            } else {
-//                logd("IMEI Based device");
-//                data = new DmtData("IMEI:" + strIMEI);
-//            }
+            String strDevId = tm.getDeviceId();
+            strDevId = strDevId.toUpperCase(Locale.US);
+            logd("DevId from telemgr: " + strDevId);
+            data = new DmtData("MEID:" + strDevId.substring(0, 14));
         } else if (path.equals("./DevInfo/DmV")) {
             data = new DmtData("1.2");
         } else if (path.equals("./DevInfo/Lang")) {
