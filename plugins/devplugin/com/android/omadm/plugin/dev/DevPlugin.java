@@ -121,10 +121,31 @@ public class DevPlugin extends DmtBasePlugin {
         } else if ("./DevInfo/DevId".equals(path)) {
             TelephonyManager tm = (TelephonyManager) mContext
                     .getSystemService(Context.TELEPHONY_SERVICE);
-            String strDevId = tm.getDeviceId();
-            strDevId = strDevId.toUpperCase(Locale.US);
-            logd("DevId from telemgr: " + strDevId);
-            data = new DmtData("MEID:" + strDevId.substring(0, 14));
+            String simOperator = tm.getSimOperator();
+            String imsi = tm.getSubscriberId();
+            logd("simOperator: " + simOperator + " IMSI: " + imsi);
+            /* Use MEID for sprint */
+            if ("310120".equals(simOperator) || (imsi != null && imsi.startsWith("310120"))) {
+                /* MEID is 14 digits. If IMEI is returned as DevId, MEID can be extracted by taking
+                 * first 14 characters. This is not always true but should be the case for sprint */
+                String strDevId = tm.getDeviceId();
+                strDevId = strDevId.toUpperCase(Locale.US);
+                logd("DeviceId from telemgr: " + strDevId);
+                if (strDevId != null && strDevId.length() >= 14) {
+                    strDevId = strDevId.substring(0, 14);
+                    logd("MEID (from DeviceId): " + strDevId);
+                    data = new DmtData("MEID:" + strDevId);
+                } else {
+                    loge("MEID cannot be extracted from DeviceId " + strDevId);
+                }
+            } else {
+                String strDevId = tm.getImei();
+                logd("IMEI from telemgr: " + strDevId);
+                if (strDevId != null) {
+                    strDevId = strDevId.toUpperCase(Locale.US);
+                    data = new DmtData("IMEI:" + strDevId);
+                }
+            }
         } else if (path.equals("./DevInfo/DmV")) {
             data = new DmtData("1.2");
         } else if (path.equals("./DevInfo/Lang")) {
