@@ -2515,6 +2515,7 @@ HandleStatusCommand (InstanceID_t   id,
     /* First check if this status is for the "SyncHdr".*/
     if (DmStrncmp((char *)pContent->cmd->content, SYNCML_SYNCHDR, pContent->cmd->length) == 0)
     {
+        XPL_LOG_DM_TMN_Debug(("\ninside dm_ua_handlecommand::handleStatusCommand, synchdr command ref:%s\n\n", (char*)pContent->cmdRef->content));
         /* Get the Client and Server Cred info and current Security state.*/
         pClientServerCreds = pDmMgmtSessionObj->GetClientServerCreds();
         currSecState = pDmMgmtSessionObj->GetSecState();
@@ -2543,7 +2544,14 @@ HandleStatusCommand (InstanceID_t   id,
 
         /* We always need to check the clientAuthStatus since we send creds on every message.*/
         clientAuthStatus = SyncML2DMCode((char *)p_auth);
-         DmFreeMem(p_auth);
+        DmFreeMem(p_auth);
+
+        XPL_LOG_DM_TMN_Debug(("\ninside dm_ua_handlecommand::handleStatusCommand, synchdr command clientAuthStatus: %d\n\n", clientAuthStatus));
+
+        if (clientAuthStatus == SYNCML_DM_AUTHENTICATION_REQUIRED)
+        {
+            return clientAuthStatus;
+        }
 
         /* Update the client retry count */
         if (clientAuthStatus  == SYNCML_DM_AUTHENTICATION_ACCEPTED ||
@@ -2779,6 +2787,7 @@ HandleStatusCommand (InstanceID_t   id,
     /* Check if this Status is for our "Replace" command (Our DevInfo) */
     else if (DmStrncmp((char *)pContent->cmd->content, SYNCML_REPLACE, pContent->cmd->length) == 0)
     {
+          XPL_LOG_DM_TMN_Debug(("\ninside dm_ua_handlecommand::handleStatusCommand, replace command ref:%s\n\n", (char*)pContent->cmdRef->content));
           /* Determine the serverStatus for our DevInfo.*/
           p_auth = (UINT8 *)DmAllocMem(pContent->data->length+1);
           if ( p_auth == NULL )
@@ -2786,15 +2795,14 @@ HandleStatusCommand (InstanceID_t   id,
              return SYNCML_DM_DEVICE_FULL;
           }
           DmStrncpy((char *)p_auth,
-                  (const char *)pContent->data->content,
-                  pContent->data->length);
+                    (const char *)pContent->data->content,
+                    pContent->data->length);
           p_auth[pContent->data->length] = '\0';
           serverStatus = SyncML2DMCode((char *)p_auth);
           DmFreeMem(p_auth);
 
           /* We only resend the DevInfo in the case of Authentication failure.*/
-          if ((serverStatus == SYNCML_DM_UNAUTHORIZED) ||
-              (serverStatus == SYNCML_DM_AUTHENTICATION_REQUIRED))
+          if (serverStatus == SYNCML_DM_UNAUTHORIZED)
           {
               /* Call the method to build our DevInfo into the REPLACE command for this package. */
               ret_stat = pDmBuildPackage->BuildReplaceCommand();
@@ -2803,13 +2811,17 @@ HandleStatusCommand (InstanceID_t   id,
                   sml_ret_stat = SML_ERR_UNSPECIFIC;
               }
           }
+          else if (serverStatus == SYNCML_DM_AUTHENTICATION_REQUIRED)
+          {
+              return serverStatus;
+          }
     } /* Replace check */
 
     /* Check if this Status is for our "Alert" command (Our SessionDirection) */
     else if (DmStrncmp((char *)pContent->cmd->content, SYNCML_ALERT, pContent->cmd->length) == 0 &&
              DmStrncmp((char *)pContent->cmdRef->content, "1", pContent->cmdRef->length) == 0)
     {
-         XPL_LOG_DM_TMN_Debug(("\ninside dm_ua_handlecommand::handleStatusCommand, alert command ref:%s\n\n",(char*)pContent->cmdRef->content));
+          XPL_LOG_DM_TMN_Debug(("\ninside dm_ua_handlecommand::handleStatusCommand, alert command ref:%s\n\n", (char*)pContent->cmdRef->content));
           /* Determine the serverStatus for our Alert (Session Direction).*/
           p_auth = (UINT8 *)DmAllocMem(pContent->data->length+1);
           if ( p_auth == NULL )
@@ -2817,15 +2829,14 @@ HandleStatusCommand (InstanceID_t   id,
               return SYNCML_DM_DEVICE_FULL;
           }
           DmStrncpy((char *)p_auth,
-                  (const char *)pContent->data->content,
-                  pContent->data->length);
+                    (const char *)pContent->data->content,
+                    pContent->data->length);
           p_auth[pContent->data->length] = '\0';
           serverStatus = SyncML2DMCode((char *)p_auth);
-           DmFreeMem(p_auth);
+          DmFreeMem(p_auth);
 
           /* We only resend the DevInfo in the case of Authentication failure.*/
-          if ((serverStatus == SYNCML_DM_UNAUTHORIZED) ||
-              (serverStatus == SYNCML_DM_AUTHENTICATION_REQUIRED))
+          if (serverStatus == SYNCML_DM_UNAUTHORIZED)
           {
               /* Call the method to build our DevInfo into the REPLACE command for this package. */
               ret_stat = pDmBuildPackage->BuildAlertCommand(pDmBuildPackage->getDirection(), NULL, NULL);
@@ -2839,6 +2850,10 @@ HandleStatusCommand (InstanceID_t   id,
               {
                   sml_ret_stat = SML_ERR_UNSPECIFIC;
               }
+          }
+          else if (serverStatus == SYNCML_DM_AUTHENTICATION_REQUIRED)
+          {
+              return serverStatus;
           }
     } /* Replace check */
 
