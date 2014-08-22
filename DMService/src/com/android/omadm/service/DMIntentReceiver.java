@@ -495,6 +495,12 @@ public class DMIntentReceiver extends BroadcastReceiver {
         int indicator = (data[17] >> 3) & 0x1;
         int sessionId = ((data[21] & 0xff) << 8) | data[22];
         int serverIdLength = data[23];    // must be equal to data.length-24
+
+        if (serverIdLength <= 0) {
+            Log.e(TAG, "parseAndSaveWapPushMessage: serverIdLength is invalid: " + serverIdLength);
+            return false;
+        }
+
         String serverId = new String(data, 24, serverIdLength, StandardCharsets.UTF_8);
         mUIMode = uiMode;
 
