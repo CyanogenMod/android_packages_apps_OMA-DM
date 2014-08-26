@@ -81,6 +81,8 @@ public class DMDataConnectionService extends Service {
             if (DBG) logd("unregistered WiFi network callback");
             mWiFiNetworkCallback = null;
         }
+        // Unbind from any network.
+        ConnectivityManager.setProcessDefaultNetwork(null);
     }
 
     private boolean isWifiConnected() {
@@ -171,8 +173,6 @@ public class DMDataConnectionService extends Service {
                     if (DBG) logd("clearing setProcessDefaultNetwork() binding");
                     ConnectivityManager.setProcessDefaultNetwork(null);
                 }
-                // TODO: don't retry forever but instead send a failure intent to DMIntentReceiver
-                requestNetworks(false);   // request FOTA APN again
             } else {
                 if (DBG) loge("CellCallback: ignoring onUnavailable() after service quit");
             }
