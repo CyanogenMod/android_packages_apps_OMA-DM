@@ -202,6 +202,8 @@ final class DMHelper {
                         context.getText(R.string.dm_session_confirmation_notification_label))
                 .setContentText(text)
                 .setContentIntent(contentIntent)
+                .setColor(context.getResources().getColor(
+                        com.android.internal.R.color.system_notification_accent_color))
                 .build();
 
         mNotificationManager.notify(NOTIFICATION_CONFIRMATION_ID,
@@ -227,6 +229,8 @@ final class DMHelper {
                 .setContentTitle(context.getText(titleId))
                 .setContentText(text)
                 .setContentIntent(contentIntent)
+                .setColor(context.getResources().getColor(
+                        com.android.internal.R.color.system_notification_accent_color))
                 .build();
 
         mNotificationManager.notify(NOTIFICATION_INFORMATIVE_ID, notification);
