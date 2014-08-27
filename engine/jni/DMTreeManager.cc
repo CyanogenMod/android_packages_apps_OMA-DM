@@ -287,26 +287,35 @@ JNIEXPORT jint JNICALL createLeaf(JNIEnv *jenv, jclass, jstring jszNode, jstring
     return static_cast<jint>(ret);
 }
 
-JNIEXPORT jint JNICALL createLeafByte(JNIEnv *jenv, jclass, jstring jszNode, jbyteArray bDataArray)
+
+JNIEXPORT jint JNICALL createLeafByte(JNIEnv *jenv, jclass clz, jstring jszNode,
+        jbyteArray bDataArray)
 {
-    GetTree();
-    if (!ptrTree) {
-        return static_cast<jint>(SYNCML_DM_FAIL);
-    }
-
     const char* szNode = jenv->GetStringUTFChars(jszNode, NULL);
-    DMString strNode(szNode);
-    jenv->ReleaseStringUTFChars(jszNode, szNode);
-
-    jbyte* jData = reinterpret_cast<jbyte*>(jenv->GetByteArrayElements(bDataArray, NULL));
+    jbyte* jData = (jbyte*)jenv->GetByteArrayElements(bDataArray, NULL);
     jsize arraySize = jenv->GetArrayLength(bDataArray);
-    DmtData dmtData(reinterpret_cast<const UINT8*>(jData), static_cast<size_t>(arraySize));
-    jenv->ReleaseByteArrayElements(bDataArray, jData, 0);
 
-    LOGI("NodePath=%s, Byte Data (%u bytes)\n", strNode.c_str(), arraySize);
+    char* pData = (char*)DmAllocMem(arraySize+1);
+    memcpy(pData, jData, arraySize);
+    pData[arraySize] = '\0';
 
     PDmtNode ptrNode;
-    SYNCML_DM_RET_STATUS_T ret = ptrTree->CreateLeafNode(strNode, ptrNode, dmtData);
+    GetTree();
+
+    jenv->ReleaseByteArrayElements(bDataArray, jData, 0);
+
+    if ( ptrTree == NULL ) {
+        DmFreeMem(pData);
+        return SYNCML_DM_FAIL;
+    }
+
+    LOGI("NodePath=%s,Byte Data=0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X\n", szNode, pData[0], pData[1],
+            pData[2], pData[3], pData[4], pData[5], pData[6]);
+
+    DMString strNode(szNode);
+
+    //PDmtNode ptrNode;
+    SYNCML_DM_RET_STATUS_T ret = ptrTree->CreateLeafNode(szNode, ptrNode, DmtData( pData ));
     if (ret == SYNCML_DM_SUCCESS) {
         LOGI("node %s created successfully\n", strNode.c_str());
     } else {

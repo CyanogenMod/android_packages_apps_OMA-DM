@@ -23,6 +23,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -34,8 +35,11 @@ import com.android.omadm.plugin.DmtPluginNode;
 import com.android.omadm.plugin.ErrorCodes;
 import com.android.omadm.service.DMSettingsHelper;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import com.android.internal.telephony.RILConstants;
 
 public class ConnmoPlugin extends DmtBasePlugin {
     static final String TAG = "DM_ConnmoPlugin";
@@ -56,6 +60,16 @@ public class ConnmoPlugin extends DmtBasePlugin {
     //--- Keys used for storing reset status ---//
     public static final String RESETBP_PREFERENCE_KEY = "resetbp";
     public static final String RESET_VALUE_KEY = "reset";
+
+    //--- Keys used for storing imei ---//
+    public static final String IMEI_PREFERENCE_KEY = "imeivalue";
+
+    public static final String IMEI_VALUE_KEY = "imei";
+
+    //--- Keys used for storing AKEY ---//
+    public static final String AKEY_PREFERENCE_KEY = "akeyvalue";
+
+    public static final String AKEY_VALUE_KEY = "akey";
 
     public ConnmoPlugin(Context ctx) {
         mContext = ctx;
@@ -648,6 +662,168 @@ public class ConnmoPlugin extends DmtBasePlugin {
         return true;
     }
 
+    @Override
+    public String getServerPW(String aiServerPW) {
+        String serverPW = null;
+        if (serverPWNeedConvertToBinary(aiServerPW) == true) {
+            TelephonyManager tm = (TelephonyManager)
+                    mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            if (isPhoneTypeLTE()) {
+                Log.d(TAG, "Calculating MD5 of IMEI");
+                String imei = readValueFromFile("DevId");
+                if (imei == null) {
+                    Log.d(TAG, "reading imei from getGsmImei()");
+                    imei = getGsmImei();
+                }
+                String passwd = passwdGenerator(imei);
+                if (!(passwd.length() > 0)) {
+                    passwd = imei;
+                }
+                serverPW = passwd.toLowerCase();
+                Log.d(TAG, "server passwd = " + passwd.toLowerCase());
+            } else if ((tm.getCurrentPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) &&
+                    !isPhoneTypeLTE()) {
+                SharedPreferences p = mContext.getSharedPreferences(AKEY_PREFERENCE_KEY, 0);
+                SharedPreferences.Editor ed = p.edit();
+                String passwd = p.getString(AKEY_VALUE_KEY, null);
+                Log.d(TAG, "Akey in  is writeAccount2Dmt " + passwd);
+                //ed.clear();
+                if (null == passwd || !(passwd.length() > 0)) {
+                    // this is needed to avoid showing DMService app force close
+                    Log.d(TAG, "set the akey value to zero");
+                    passwd = "0000000000000000";
+                }
+                serverPW = passwd;
+                Log.d(TAG, "server passwd = " + passwd);
+            }
+        }
+
+        return serverPW;
+    }
+
+    @Override
+    public String getClientPW(String aiClientPW) {
+        String clientPW = null;
+        if(clientPWNeedConvertToBinary(aiClientPW)) {
+            TelephonyManager tm = (TelephonyManager) mContext.
+                    getSystemService(Context.TELEPHONY_SERVICE);
+            if (isPhoneTypeLTE()) {
+                Log.d(TAG, "Calculating MD5 of IMEI");
+                String imei = readValueFromFile("DevId");
+                if (imei == null) {
+                    Log.d(TAG, "reading imei from getGsmImei()");
+                    imei = getGsmImei();
+                }
+                String passwd = passwdGenerator(imei);
+                if (!(passwd.length() > 0)) {
+                    passwd = imei;
+                }
+                clientPW = passwd.toLowerCase();
+                Log.d(TAG, "clientNodePath = " + passwd.toLowerCase());
+            } else if ((tm.getCurrentPhoneType() == TelephonyManager.PHONE_TYPE_CDMA)
+                    && !isPhoneTypeLTE()) {
+                SharedPreferences p = mContext.getSharedPreferences(AKEY_PREFERENCE_KEY, 0);
+                SharedPreferences.Editor ed = p.edit();
+                String passwd = p.getString(AKEY_VALUE_KEY, null);
+                Log.d(TAG, "Akey in  is writeAccount2Dmt " + passwd);
+                //ed.clear();
+                if (null == passwd || !(passwd.length() > 0)) {
+                    // this is needed to avoid showing DMService app force close
+                    Log.d(TAG, "set the akey value to zero");
+                    passwd = "0000000000000000";
+                }
+                clientPW = passwd;
+                Log.d(TAG, "client passwd = " + passwd);
+            }
+        }
+        return clientPW;
+    }
+
+    @Override
+    public String getUsername(String aiUsername) {
+        String username = null;
+        if (!clientNameNeedConvertToBinary(aiUsername)) {
+            username = aiUsername;
+        }
+        return username;
+    }
+
+    private static final String strOpenWaveServePW = "fce9e2e4e0e0";
+    private static final String strOpenWaveClientName = "e0e5e7eaebeb";
+    private static final String strOpenWaveClientPW = "ebe8efeeecec";
+
+    private static final String strMotoFactoryServePW = "fce9e2e4e0";
+    private static final String strMotoFactoryClientName = "e0e5e7eaeb";
+    private static final String strMotoFactoryClientPW = "ebe8efeeec";
+
+    String getGsmImei() {
+        SharedPreferences p = mContext.getSharedPreferences(IMEI_PREFERENCE_KEY, 0);
+        String gsmImei = p.getString(IMEI_VALUE_KEY, null);
+        if (CONNMO_LOGD) Log.d(TAG, "gsmImei in loadDmConfig is " + gsmImei);
+        //ed.clear();
+        if (null == gsmImei || gsmImei.isEmpty()) {
+            // this is needed to avoid showing DMService app force close
+            if (CONNMO_LOGD) Log.d(TAG, "set the imei value to zero");
+            gsmImei = "0";
+        } else if (gsmImei.length() > 15) {
+            if (CONNMO_LOGD) Log.d(TAG, "imei length exceeding 15 digits so trim it to 15");
+            gsmImei = gsmImei.substring(0, 15);
+        }
+
+        return gsmImei;
+    }
+
+    private String readValueFromFile(String propName) {
+        String ret = null;
+        // use preference instead of the system property
+        SharedPreferences prefs = mContext.getSharedPreferences("dmconfig", 0);
+        if (prefs.contains(propName)) {
+            ret = prefs.getString(propName, "");
+            if (ret.length() == 0) {
+                ret = null;
+            }
+        }
+        return ret;
+    }
+
+    private static boolean serverPWNeedConvertToBinary(String str) {
+        if (strOpenWaveServePW.equalsIgnoreCase(str) ||
+                strMotoFactoryServePW.equalsIgnoreCase(str)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean clientNameNeedConvertToBinary(String str) {
+        if (strOpenWaveClientName.equalsIgnoreCase(str) ||
+                strMotoFactoryClientName.equalsIgnoreCase(str)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean clientPWNeedConvertToBinary(String str) {
+        if (strOpenWaveClientPW.equalsIgnoreCase(str) ||
+                strMotoFactoryClientPW.equalsIgnoreCase(str)) {
+            return true;
+        }
+        return false;
+    }
+
+    private String passwdGenerator(String imei) {
+        Log.d(TAG, "In passwdGenerator");
+        try {
+            MessageDigest mDigest = java.security.MessageDigest.getInstance("MD5");
+            mDigest.update(imei.getBytes(), 0 , imei.length());
+            BigInteger passwd = new BigInteger(1, mDigest.digest());
+            return String.format("%1$032X", passwd);
+        } catch(Exception e) {
+            Log.d(TAG, "Exception while generating passwd");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private DmtData getValue(String path) throws SQLiteException {
         if (CONNMO_LOGD) Log.d(TAG,"Entered getValue function");
         DmtData value = null;
@@ -667,24 +843,27 @@ public class ConnmoPlugin extends DmtBasePlugin {
               } */
             if(splitPath.length > 0){
                 if (CONNMO_LOGD) Log.d(TAG,"splitPath.length > 0");
+
+                int profileId = RILConstants.DATA_PROFILE_OEM_BASE;
                 if("1".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon IMS" + "'";
+                    profileId += 1;   //APN1 -- IMS
                 }
                 else if("3".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon Internet" + "'";
+                    profileId += 3;   //APN3 -- Internet
                 }
                 else if("2".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon FOTA" + "'";
+                    profileId += 2;   //APN2  -- Admin/Fota
                 }
                 else if("4".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon CBS" + "'";
+                    profileId += 4;   //APN4  -- CBS
                 }
                 else if("5".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon 800" + "'";
+                    profileId += 5;   //APN5
                 }
+                mWhere = "profile_id" + "=" + "'" + Integer.toString(profileId) + "'";
 
                 if ("Id".equals(splitPath[4])) {
-                    getColumn = "class";
+                    getColumn = "profile_id";
                 } else if ("Name".equals(splitPath[4])) {
                     getColumn = "apn";
                 } else if ("IP".equals(splitPath[4])) {
@@ -713,6 +892,11 @@ public class ConnmoPlugin extends DmtBasePlugin {
                         } else if ("0".equals(c.getString(0))) {
                             value = new DmtData(false);
                         }
+                    }
+                    if ("profile_id".equals(getColumn)) {
+                        value = new DmtData(Integer.parseInt(value.getString())
+                                                 - RILConstants.DATA_PROFILE_OEM_BASE);
+                        Log.d(TAG, "profile_id=" + value.getString());
                     }
                     if (ConnmoPlugin.CONNMO_LOGD) {
                         Log.d(TAG, getColumn + "from telephonydb is :" + value);
@@ -754,21 +938,24 @@ public class ConnmoPlugin extends DmtBasePlugin {
             }
             if (splitPath.length > 0) {
                 if (ConnmoPlugin.CONNMO_LOGD) Log.d(TAG,"Inside splitPath.length > 0");
+
+                int profileId = RILConstants.DATA_PROFILE_OEM_BASE;
                 if("1".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon IMS" + "'";
+                    profileId += 1;   //APN1 -- IMS
                 }
                 else if("3".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon Internet" + "'";
+                    profileId += 3;   //APN2 -- Internet
                 }
                 else if("2".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon FOTA" + "'";
+                    profileId += 2;   //APN3 -- Admin/Fota
                 }
                 else if("4".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon CBS" + "'";
+                    profileId += 4;   //APN4 -- CBS
                 }
                 else if("5".equals(splitPath[2])) {
-                    mWhere = "name" + "=" + "'" + "Verizon 800" + "'";
+                    profileId += 5;   //APN5
                 }
+                mWhere = "profile_id" + "=" + "'" + Integer.toString(profileId) + "'";
 
                 if ("Name".equals(splitPath[4])) {
                     if (!newValue.getString().isEmpty()) {

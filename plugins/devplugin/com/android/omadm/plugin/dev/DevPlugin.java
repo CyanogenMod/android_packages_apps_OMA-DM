@@ -139,11 +139,19 @@ public class DevPlugin extends DmtBasePlugin {
                     loge("MEID cannot be extracted from DeviceId " + strDevId);
                 }
             } else {
-                String strDevId = tm.getImei();
-                logd("IMEI from telemgr: " + strDevId);
-                if (strDevId != null) {
-                    strDevId = strDevId.toUpperCase(Locale.US);
+                String strDevId;
+                if (isPhoneTypeLTE()) {
+                    strDevId = tm.getImei();
+                } else {
+                    strDevId = tm.getDeviceId();
+                }
+                strDevId = strDevId.toUpperCase(Locale.US);
+                logd("DevId from telemgr: " + strDevId);
+
+                if (isPhoneTypeLTE()) {
                     data = new DmtData("IMEI:" + strDevId);
+                } else {
+                    data = new DmtData("MEID:" + strDevId.substring(0, 14));
                 }
             }
         } else if (path.equals("./DevInfo/DmV")) {

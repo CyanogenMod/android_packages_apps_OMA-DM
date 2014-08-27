@@ -48,7 +48,7 @@
 #define DMTPT_WSP_CHUNK_SIZE  8192
 
 // define for maximum number of retries
-#define DMTPT_MAX_RETRIES 3
+#define DMTPT_MAX_RETRIES 5
 
 //-----------------------------------------------------------------------
 //                            MACROS

@@ -106,17 +106,17 @@ public abstract class DmtBasePlugin extends IDmtPlugin.Stub {
     }
 
     @Override
-    public String getServerPW() {
+    public String getServerPW(String aiServerPW) {
         return null;
     }
 
     @Override
-    public String getClientPW() {
+    public String getClientPW(String aiClientPW) {
         return null;
     }
 
     @Override
-    public String getUsername() {
+    public String getUsername(String aiUsername) {
         return null;
     }
 }

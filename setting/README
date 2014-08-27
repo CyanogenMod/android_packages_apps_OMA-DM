@@ -2,9 +2,8 @@ This directory contains files needed to generate DM Tree files. To add or
 modify tree:
 1. Unzip Dmt.zip
 2. Make necessary changes to metadata files under Dmt/ directory
-3. Set ANDROID_ROOT to root of Android source directory
-4. Set JAVA_HOME to JAVA home directory
-5. Run "make" to generate tree files, which also copy them to "assets" directory of DMService
+3. Zip them to a new Dmt.zip
+4. Run "make" to generate tree files, which also copy them to "assets" directory of DMService
 
 File list
 ---------

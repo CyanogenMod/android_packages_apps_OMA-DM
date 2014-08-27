@@ -183,19 +183,19 @@ interface IDmtPlugin
      *
      * @return String. null if plugin is not carrier specific
      */
-    String getServerPW();
+    String getServerPW(String aiServerPW);
 
     /**
      * Returns DM account client PW. This is not lookup from the DM tree; this function generates it.
      *
      * @return String. null if plugin is not carrier specific
      */
-    String getClientPW();
+    String getClientPW(String aiClientPW);
 
     /**
      * Returns DM account user name. This is not lookup from the DM tree; this function generates it.
      *
      * @return String. null if plugin is not carrier specific
      */
-    String getUsername();
+    String getUsername(String aiUsername);
 }

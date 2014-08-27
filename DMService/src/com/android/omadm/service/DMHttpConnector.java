@@ -16,6 +16,7 @@
 
 package com.android.omadm.service;
 
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -292,8 +293,18 @@ public class DMHttpConnector {
     private void setHostProxy() {
         String hostname = DMHelper.getProxyHostname(mContext);
         if (TextUtils.isEmpty(hostname)) {
-            loge("Using default proxy hostname!!");
-            hostname = "oma.ssprov.sprint.com";
+            TelephonyManager tm = (TelephonyManager) mContext
+                        .getSystemService(mContext.TELEPHONY_SERVICE);
+            String simOperator = tm.getSimOperator();
+            String imsi = tm.getSubscriberId();
+            if ("310120".equals(simOperator) || (imsi != null && imsi.startsWith("310120"))) {
+                loge("Using default proxy hostname!!");
+                hostname = "oma.ssprov.sprint.com";
+            } else {
+                Log.d(TAG, "no proxy");
+                mProxy = null;
+                return;
+            }
         }
 
         SocketAddress sa = InetSocketAddress.createUnresolved(hostname, 80);
@@ -352,7 +363,7 @@ public class DMHttpConnector {
                     return;
                 }
                 byte[] xml = null;
-                if (contentType.equalsIgnoreCase(MIME_TYPE_SYNCML_DM_WBXML)) {
+                if ((contentType.toLowerCase()).startsWith(MIME_TYPE_SYNCML_DM_WBXML)) {
                     if (mLogLevel == 2) {
                         xml = NativeDM.nativeWbxmlToXml(body);
                         if (xml != null) {

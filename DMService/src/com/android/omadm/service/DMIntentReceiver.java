@@ -945,16 +945,30 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     private static boolean isWifiConnected(Context context) {
         Log.d(TAG, "Inside isWifiConnected");
+
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) {
+            Log.d(TAG, "can't get Connectivity Service");
             return false;
         }
 
         NetworkInfo ni = cm.getActiveNetworkInfo();
+        if (ni == null) {
+            Log.d(TAG, "NetworkInfo is null");
+            return false;
+        }
+        if (!ni.isConnected()) {
+            Log.d(TAG, "Network is not connected");
+            return false;
+        }
+        if (ni.getType() != ConnectivityManager.TYPE_WIFI) {
+            Log.d(TAG, "network type is not wifi");
+            return false;
+        }
 
         // return true only when WiFi is connected
-        return ni != null && ni.isConnected() && ni.getType() == ConnectivityManager.TYPE_WIFI;
+        return true;
     }
 
 

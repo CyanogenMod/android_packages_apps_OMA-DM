@@ -1,4 +1,4 @@
-DM_ROOT     := $(ANDROID_ROOT)/packages/apps/OMA-DM
+DM_ROOT     := $(CURDIR)/..
 DM_ENGINE   := $(DM_ROOT)/engine
 DM_SERVICE  := $(DM_ROOT)/DMService
 DM_SETTING  := $(DM_ROOT)/setting
@@ -22,11 +22,8 @@ all:
 	-rm -rf $(DM_SETTING)/dmt_data/*
 	cp -r $(MY_OUT)/treedata/*    $(DM_SETTING)/dmt_data/
 	cp $(MY_OUT)/treedata/fstab   $(DM_ASSETS)/dm/dmt_data/fstab
-	cp $(MY_OUT)/treedata/*.xml   $(DM_ASSETS)/dm/dmt_data/
 	cp $(MY_OUT)/treedata/*.wbxml $(DM_ASSETS)/dm/dmt_data/
 	cp $(MY_OUT)/treedata/*.dat   $(DM_ASSETS)/dm/dmt_data/
-	cp $(MY_OUT)/treedata/*.txt   $(DM_ASSETS)/dm/dmt_data/
-	cp $(MY_OUT)/treedata/*.mdf   $(DM_ASSETS)/dm/dmt_data/
 	cp $(MY_OUT)/treedata/*.bmdf  $(DM_ASSETS)/dm/dmt_data/
-	cp $(MY_OUT)/treedata/*.ddf  $(DM_ASSETS)/dm/dmt_data/
+	-rm -rf $(MY_TMP)
 

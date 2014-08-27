@@ -166,6 +166,7 @@ SYNCML_DM_OTAConnection::Send(const SYNCML_DM_INDIRECT_BUFFER_T* psSendSyncMLDoc
         // retry for timeout or general connection errors
         if (jResult == SYNCML_DM_SOCKET_TIMEOUT
                 || jResult == SYNCML_DM_SOCKET_CONNECT_ERR
+                || jResult == SYNCML_DM_UNKNOWN_HOST
                 || jResult == SYNCML_DM_NO_HTTP_RESPONSE
                 || jResult == SYNCML_DM_REQUEST_TIMEOUT
                 || jResult == SYNCML_DM_INTERRUPTED
@@ -175,7 +176,7 @@ SYNCML_DM_OTAConnection::Send(const SYNCML_DM_INDIRECT_BUFFER_T* psSendSyncMLDoc
             wNumRetries++;
 
             // FIXME: thread blocks here on sleep for 10 seconds
-            ::sleep(10);  // sleep a little bit before trying again
+            ::sleep(15);  // sleep a little bit before trying again
             continue;
         }
 

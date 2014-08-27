@@ -151,6 +151,7 @@ public class ConnmoReceiver extends BroadcastReceiver {
 
     private void startDisableAPN2Service(Context context) {
         Intent backupServiceIntent = new Intent();
+        backupServiceIntent.setClass(context, ConnmoBackupService.class);
         backupServiceIntent.setAction(ConnmoConstants.INTENT_DISABLE_APN2);
         context.startService(backupServiceIntent);
     }

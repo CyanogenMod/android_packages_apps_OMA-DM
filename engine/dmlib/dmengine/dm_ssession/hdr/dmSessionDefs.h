@@ -41,12 +41,12 @@
 #define WORKSPACE_NAME_LEN        30      /* String length of workspace name */
 #define MAX_BIN_NONCE_LEN         50      /* Maximum length of a binary decoded Nonce */
 #define MAX_BIN_VAL_LEN              50     /* Max length of a b64 decode bin array */
-   
+
 #define DEFAULT_MESSAGE_ID   "1"
 #define DEFAULT_HDR_CMD_ID   "0"
 
-//#define SERVER_RESYNC_NONCE  "AAAAAA=="  // Motorola, <e50324>, <12/08/09>, <ikmap-2156> / Nonce Resynchronization
-#define SERVER_RESYNC_NONCE  "MTIzNDU="  // for Sprint HFA OMA DM
+#define SERVER_RESYNC_NONCE  "AAAAAA=="  // Motorola, <e50324>, <12/08/09>, <ikmap-2156> / Nonce Resynchronization
+//#define SERVER_RESYNC_NONCE  "MTIzNDU="  // for Sprint HFA OMA DM
 
 /*==================================================================================================
                                  ENUMS
