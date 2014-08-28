@@ -23,17 +23,6 @@ LOCAL_MODULE_PATH := $(TARGET_OUT)/etc/permissions
 LOCAL_SRC_FILES := ../config/com.android.omadm.service.xml
 include $(BUILD_PREBUILT)
 
-target_dir := $(TARGET_OUT)/etc/omadm/com.android.omadm.service/databases
-config_dir := ../config
-
-include $(CLEAR_VARS)
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := dmAccounts.xml
-LOCAL_MODULE_CLASS := ETC
-LOCAL_MODULE_PATH := $(target_dir)
-LOCAL_SRC_FILES := $(config_dir)/dmAccounts_sprint.xml
-include $(BUILD_PREBUILT)
-
 include $(CLEAR_VARS)
 
 LOCAL_MODULE_TAGS := optional
