@@ -177,4 +177,25 @@ interface IDmtPlugin
      * @return ErrorCodes.SYNCML_DM_SUCCESS in success case, otherwise an error.
      */
     int commit();
+
+    /**
+     * Returns DM account server PW. This is not lookup from the DM tree; this function generates it.
+     *
+     * @return String. null if plugin is not carrier specific
+     */
+    String getServerPW();
+
+    /**
+     * Returns DM account client PW. This is not lookup from the DM tree; this function generates it.
+     *
+     * @return String. null if plugin is not carrier specific
+     */
+    String getClientPW();
+
+    /**
+     * Returns DM account user name. This is not lookup from the DM tree; this function generates it.
+     *
+     * @return String. null if plugin is not carrier specific
+     */
+    String getUsername();
 }
