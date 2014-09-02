@@ -104,4 +104,19 @@ public abstract class DmtBasePlugin extends IDmtPlugin.Stub {
     public int commit() throws RemoteException {
         return setOperationResult(ErrorCodes.SYNCML_DM_UNSUPPORTED_OPERATION);
     }
+
+    @Override
+    public String getServerPW() {
+        return null;
+    }
+
+    @Override
+    public String getClientPW() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return null;
+    }
 }
