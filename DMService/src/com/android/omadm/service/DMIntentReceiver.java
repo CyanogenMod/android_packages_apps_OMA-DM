@@ -273,7 +273,6 @@ public class DMIntentReceiver extends BroadcastReceiver {
             Log.d(TAG, "Boot completed: there is no DM Tree. Start service to generate tree.");
             Intent intent = new Intent(DMIntent.LAUNCH_INTENT);
             intent.putExtra("NodePath", ".");
-            intent.putExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_UNITEST_GET_STRING_NODE);
             intent.putExtra(DMIntent.FIELD_REQUEST_ID, -2L);
             intent.setClass(context, DMClientService.class);
             context.startService(intent);

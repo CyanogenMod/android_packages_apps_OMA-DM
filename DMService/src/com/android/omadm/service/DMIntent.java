@@ -92,16 +92,6 @@ public interface DMIntent {
 
     int TYPE_CLIENT_SESSION_REQUEST = 6;
 
-    int TYPE_BOOTSTRAP = 7;
-
-    int TYPE_UNITEST_SET_STRING_NODE = 10;
-
-    int TYPE_UNITEST_GET_STRING_NODE = 11;
-
-    int TYPE_UNITEST_DUMP_TREE = 12;
-
-    int TYPE_UNITEST_PROCESS_SCRIPT = 13;
-
     int TYPE_LAWMO_NOTIFY_SESSION = 15;
 
     int TYPE_DO_NOTHING = 100;

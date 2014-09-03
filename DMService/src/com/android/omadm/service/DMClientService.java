@@ -267,25 +267,6 @@ public class DMClientService extends IntentService {
                     }
                     break;
 
-                case DMIntent.TYPE_BOOTSTRAP:
-                    if (DBG) {
-                        Log.d(TAG, "process bootstrap message");
-                    }
-                    String serverId;
-                    startTimeOutTick(timeOutSecond);
-                    serverId = parseBootstrapServerId((byte[]) pkg.mobj, pkg.mbvalue);
-                    if (!TextUtils.isEmpty(serverId)) {
-                        ret = processBootstrapScript((byte[]) pkg.mobj, pkg.mbvalue,
-                                serverId);
-                        Intent intent = new Intent(DMIntent.DM_SERVICE_RESULT_INTENT);
-                        intent.putExtra(DMIntent.FIELD_DM_UNITEST_RESULT, serverId);
-                        intent.putExtra(DMIntent.FIELD_REQUEST_ID, pkg.mGlobalSID);
-                        sendBroadcast(intent);
-                    } else {
-                        ret = 1;
-                    }
-                    break;
-
                 case DMIntent.TYPE_FOTA_CLIENT_SESSION_REQUEST:
                     if (DBG) {
                         Log.d(TAG, "Start fota client initialized session");
@@ -388,23 +369,6 @@ public class DMClientService extends IntentService {
                 }
                 DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
                 pkg.mobj = intent.getByteArrayExtra(DMIntent.FIELD_PKG0);
-                processMsg(pkg);
-                break;
-            }
-            case DMIntent.TYPE_BOOTSTRAP: {
-                if (DBG) Log.d(TAG, "bootstrap received.");
-
-                byte[] bsData = intent.getByteArrayExtra(DMIntent.FIELD_BOOTSTRAP_MSG);
-                if (bsData == null) {
-                    if (DBG) Log.d(TAG, "bootstrap received, but no bootstrap data.");
-                    return;
-                }
-                // assume binary
-                boolean isBinary = intent.getBooleanExtra(DMIntent.FIELD_IS_BINARY, true);
-
-                DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
-                pkg.mobj = intent.getByteArrayExtra(DMIntent.FIELD_BOOTSTRAP_MSG);
-                pkg.mbvalue = isBinary;
                 processMsg(pkg);
                 break;
             }
