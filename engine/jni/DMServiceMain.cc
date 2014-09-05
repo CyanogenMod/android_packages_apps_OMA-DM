@@ -474,8 +474,6 @@ static JNINativeMethod gMethods[] = {
     {"processScript",
         "(Ljava/lang/String;Ljava/lang/String;ZILcom/android/omadm/service/DMSession;)[B",
         (void*)processScript},
-    {"processBootstrapScript", "([BZLjava/lang/String;)I", (void*)processBootstrapScript},
-    {"parseBootstrapServerId", "([BZ)Ljava/lang/String;", (void*)parseBootstrapServerId},
 };
 
 int registerNatives(JNIEnv* env)
