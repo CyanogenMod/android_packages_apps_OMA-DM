@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DMClientService extends IntentService {
     private static final String TAG = "DMClientService";
-    static final boolean DBG = true;    // STOPSHIP: change to false
+    static final boolean DBG = false;    // STOPSHIP: change to false
 
     // flag "DM session in progress" used from DMIntentReceiver
     public static boolean sIsDMSessionInProgress;
