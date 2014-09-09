@@ -23,6 +23,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
@@ -346,6 +347,10 @@ final class DMHelper {
             // FIXME: don't ignore result of delete
             file.delete();
         }
+    }
+
+    public static boolean isRunningAsOwner() {
+        return Process.myUserHandle().isOwner();
     }
 
     public static void cleanFotaApnResources(Context context) {

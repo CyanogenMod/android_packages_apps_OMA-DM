@@ -80,6 +80,11 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (!DMHelper.isRunningAsOwner()) {
+            Log.d(TAG, "Not run from owner, don't do anything.");
+            return;
+        }
+
         String action = intent.getAction();
 
         if (DBG) Log.d(TAG, "Received new intent: " + action);
