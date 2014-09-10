@@ -22,7 +22,6 @@
 #include "DMServiceMain.h"
 #include "dmt.hpp"
 #include "DMTreeManager.h"
-
 static jobject g_sessionObj;
 int g_cancelSession;
 
@@ -76,6 +75,56 @@ static void Dump(const char* buf, int size, boolean isBinary)
   }
 }
 
+/**
+ * check the input string is a a valid UTF-8 string or not
+ * 1 -- valid, 0 -- invalid
+ */
+static jint isUtf8Valid(const char* bytes) {
+    while (*bytes != '\0') {
+      uint8_t utf8 = *(bytes++);
+      // Switch on the high four bits.
+      switch (utf8 >> 4) {
+      case 0x00:
+      case 0x01:
+      case 0x02:
+      case 0x03:
+      case 0x04:
+      case 0x05:
+      case 0x06:
+      case 0x07:
+        // Bit pattern 0xxx. No need for any extra bytes.
+        break;
+      case 0x08:
+      case 0x09:
+      case 0x0a:
+      case 0x0b:
+      case 0x0f:
+        /*
+         * Bit pattern 10xx or 1111, which are illegal start bytes.
+         * Note: 1111 is valid for normal UTF-8, but not the
+         * Modified UTF-8 used here.
+         */
+        return 0;
+      case 0x0e:
+        // Bit pattern 1110, so there are two additional bytes.
+        utf8 = *(bytes++);
+        if ((utf8 & 0xc0) != 0x80) {
+          return 0;
+        }
+        // Fall through to take care of the final byte.
+      case 0x0c:
+      case 0x0d:
+        // Bit pattern 110x, so there is one additional byte.
+        utf8 = *(bytes++);
+        if ((utf8 & 0xc0) != 0x80) {
+          return 0;
+        }
+        break;
+      }
+    }
+    return 1;
+}
+
 
 JNIEXPORT jint
 initialize(JNIEnv* /*env*/, jobject /*jobj*/)
@@ -117,11 +166,23 @@ parsePkg0(JNIEnv* env, jclass, jbyteArray jPkg0, jobject jNotification)
 
     DmtNotification notif;
     DmtPrincipal p("localhost");
+
     SYNCML_DM_RET_STATUS_T ret = DmtTreeFactory::ProcessNotification(p, (UINT8*)pkg0Buf, (INT32)pkg0Len, notif);
 
+    if(ret == SYNCML_DM_FAIL) {
+	return static_cast<jint>(SYNCML_DM_FAIL);
+    }
+
     jmethodID jSetServerID = env->GetMethodID( notifClass, "setServerID", "(Ljava/lang/String;)V");
-    jstring jServerID = env->NewStringUTF(notif.getServerID().c_str());
-    env->CallVoidMethod(jNotification, jSetServerID, jServerID);
+
+    if(isUtf8Valid(notif.getServerID().c_str())) {
+        jstring jServerID = env->NewStringUTF(notif.getServerID().c_str());
+        env->CallVoidMethod(jNotification, jSetServerID, jServerID);
+    } else {
+        LOGE("Invalid Server ID, not legal UTF8");
+        return static_cast<jint>(SYNCML_DM_FAIL);
+    }
+
 
     jmethodID jSetSessionID = env->GetMethodID( notifClass, "setSessionID", "(I)V");
     env->CallVoidMethod(jNotification, jSetSessionID, (jint)notif.getSessionID());
