@@ -113,7 +113,7 @@ public class DMClientService extends IntentService {
                     return dmtData;
                 }
             } catch (Exception e) {
-                Log.e(TAG, "caught exception", e);
+                loge("caught exception", e);
                 return new DmtData("", DmtData.STRING);
             }
         }
@@ -174,7 +174,7 @@ public class DMClientService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        if (DBG) logd("Enter onCreate tid=" + Thread.currentThread().getId());
+        logd("Enter onCreate tid=" + Thread.currentThread().getId());
 
         copyFilesFromAssets();      // wait for completion before continuing
 
@@ -196,7 +196,7 @@ public class DMClientService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
 
-        if (DBG) logd("Enter onDestroy tid=" + Thread.currentThread().getId());
+        logd("Enter onDestroy tid=" + Thread.currentThread().getId());
 
         mAbortSession = null;
 
@@ -223,7 +223,7 @@ public class DMClientService extends IntentService {
 
         @Override
         protected DMConfigureDB doInBackground(DMClientService... params) {
-            if (DBG) logd("creating new DMConfigureDB() on tid "
+            logd("creating new DMConfigureDB() on tid "
                     + Thread.currentThread().getId());
             return new DMConfigureDB(params[0]);
         }
@@ -236,10 +236,10 @@ public class DMClientService extends IntentService {
     private void processMsg(DMSessionPkg pkg) {
         // wait for up to 70 seconds for config DB to initialize.
         if (getConfigDB() == null) {
-            Log.e(TAG, "processMsg: getConfigDB() failed. Aborting session");
+            loge("processMsg: getConfigDB() failed. Aborting session");
             return;
         }
-        if (DBG) logd("processMsg: getConfigDB() succeeded");
+        logd("processMsg: received pkg type " + pkg.mType + "; getConfigDB() succeeded");
 
         sIsDMSessionInProgress = true;
 
@@ -259,7 +259,7 @@ public class DMClientService extends IntentService {
             switch (pkg.mType) {
                 case DMIntent.TYPE_PKG0_NOTIFICATION:
                     if (DBG) {
-                        Log.d(TAG, "Start pkg0 alert session");
+                        logd("Start pkg0 alert session");
                     }
                     startTimeOutTick(timeOutSecond);
                     synchronized (mSessionLock) {
@@ -269,7 +269,7 @@ public class DMClientService extends IntentService {
 
                 case DMIntent.TYPE_FOTA_CLIENT_SESSION_REQUEST:
                     if (DBG) {
-                        Log.d(TAG, "Start fota client initialized session");
+                        logd("Start fota client initialized session");
                     }
                     startTimeOutTick(timeOutSecond);
                     synchronized (mSessionLock) {
@@ -280,7 +280,7 @@ public class DMClientService extends IntentService {
 
                 case DMIntent.TYPE_FOTA_NOTIFY_SERVER:
                     if (DBG) {
-                        Log.d(TAG, "Start FOTA notify session");
+                        logd("Start FOTA notify session");
                     }
                     startTimeOutTick(timeOutSecond);
                     synchronized (mSessionLock) {
@@ -290,7 +290,7 @@ public class DMClientService extends IntentService {
 
                 case DMIntent.TYPE_CLIENT_SESSION_REQUEST:
                     if (DBG) {
-                        Log.d(TAG, "Start client initialized session:");
+                        logd("Start client initialized session:");
                     }
                     if (pkg.mobj != null) {
                         startTimeOutTick(timeOutSecond);
@@ -302,7 +302,7 @@ public class DMClientService extends IntentService {
 
                 case DMIntent.TYPE_LAWMO_NOTIFY_SESSION:
                     if (DBG) {
-                        Log.d(TAG, "Start LAWMO notify session");
+                        logd("Start LAWMO notify session");
                     }
                     startTimeOutTick(timeOutSecond);
                     synchronized (mSessionLock) {
@@ -312,7 +312,7 @@ public class DMClientService extends IntentService {
                     break;
             }
 
-            if (DBG) Log.d(TAG, "DM Session result code=" + ret);
+            logd("DM Session result code=" + ret);
 
             synchronized (mSessionLock) {
                 mSession = null;
@@ -332,7 +332,7 @@ public class DMClientService extends IntentService {
         synchronized (mSessionLock) {
             if (requestID == 0 || mServiceID == requestID) {
                 if (mSession != null) {
-                    Log.e(TAG, "Cancel session with serviceID: " + mServiceID);
+                    loge("Cancel session with serviceID: " + mServiceID);
                     mSession.cancelSession();
                 }
             }
@@ -348,23 +348,23 @@ public class DMClientService extends IntentService {
         long requestID = intent.getLongExtra(DMIntent.FIELD_REQUEST_ID, 0);
         int intentType = intent.getIntExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_UNKNOWN);
 
-        if (DBG) Log.d(TAG, "onStart intentType: " + intentType + " requestID: "
+        logd("onStart intentType: " + intentType + " requestID: "
                 + requestID);
 
         // wait for up to 70 seconds for config DB to initialize.
         if (getConfigDB() == null) {
-            Log.e(TAG, "WARNING! getConfigDB() failed. Aborting session");
+            loge("WARNING! getConfigDB() failed. Aborting session");
             return;
         }
-        if (DBG) Log.d(TAG, "getConfigDB() succeeded");
+        if (DBG) logd("getConfigDB() succeeded");
 
         switch (intentType) {
             case DMIntent.TYPE_PKG0_NOTIFICATION: {
-                if (DBG) Log.d(TAG, "Pkg0 provision received.");
+                if (DBG) logd("Pkg0 provision received.");
 
                 byte[] pkg0data = intent.getByteArrayExtra(DMIntent.FIELD_PKG0);
                 if (pkg0data == null) {
-                    if (DBG) Log.d(TAG, "Pkg0 provision received, but no pkg0 data.");
+                    if (DBG) logd("Pkg0 provision received, but no pkg0 data.");
                     return;
                 }
                 DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
@@ -373,19 +373,19 @@ public class DMClientService extends IntentService {
                 break;
             }
             case DMIntent.TYPE_FOTA_CLIENT_SESSION_REQUEST: {
-                if (DBG) Log.d(TAG, "Client initiated dm session was received.");
+                if (DBG) logd("Client initiated dm session was received.");
 
                 DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
                 String serverID = intent.getStringExtra(DMIntent.FIELD_SERVERID);
                 String alertStr = intent.getStringExtra(DMIntent.FIELD_ALERT_STR);
 
                 if (TextUtils.isEmpty(serverID)) {
-                    Log.e(TAG, "missing server ID, returning");
+                    loge("missing server ID, returning");
                     return;
                 }
 
                 if (TextUtils.isEmpty(alertStr)) {
-                    Log.e(TAG, "missing alert string, returning");
+                    loge("missing alert string, returning");
                     return;
                 }
 
@@ -401,7 +401,7 @@ public class DMClientService extends IntentService {
                 String serverID = intent.getStringExtra(DMIntent.FIELD_SERVERID);
                 String correlator = intent.getStringExtra(DMIntent.FIELD_CORR);
 
-                if (DBG) Log.d(TAG, "FOTA_NOTIFY_SERVER_SESSION Input==>\n" + " Result="
+                if (DBG) logd("FOTA_NOTIFY_SERVER_SESSION Input==>\n" + " Result="
                         + result + '\n' + " pkgURI=" + pkgURI + '\n'
                         + " alertType=" + alertType + '\n' + " serverID="
                         + serverID + '\n' + " correlator=" + correlator);
@@ -413,7 +413,7 @@ public class DMClientService extends IntentService {
                 break;
             }
             case DMIntent.TYPE_CLIENT_SESSION_REQUEST: {
-                if (DBG) Log.d(TAG, "Client initiated dm session was received.");
+                if (DBG) logd("Client initiated dm session was received.");
 
                 DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
                 String serverID = intent.getStringExtra(DMIntent.FIELD_SERVERID);
@@ -422,15 +422,15 @@ public class DMClientService extends IntentService {
                 // XXXXX FIXME this should not be here!
                 synchronized (this) {
                     try {
-                        if (DBG) Log.d(TAG, "Timeout: " + timer);
+                        if (DBG) logd("Timeout: " + timer);
                         if (timer > 0) {
                             wait(timer * 1000);
                         }
                     } catch (InterruptedException e) {
-                        if (DBG) Log.d(TAG, "Waiting has been interrupted.");
+                        if (DBG) logd("Waiting has been interrupted.");
                     }
                 }
-                if (DBG) Log.d(TAG, "Starting session.");
+                if (DBG) logd("Starting session.");
 
                 if (serverID != null && !serverID.isEmpty()) {
                     pkg.mobj = serverID;
@@ -444,7 +444,7 @@ public class DMClientService extends IntentService {
                 break;
             }
             case DMIntent.TYPE_LAWMO_NOTIFY_SESSION: {
-                if (DBG) Log.d(TAG, "LAWMO Notify DM Session was received");
+                if (DBG) logd("LAWMO Notify DM Session was received");
 
                 DMSessionPkg pkg = new DMSessionPkg(intentType, requestID);
 
@@ -494,9 +494,9 @@ public class DMClientService extends IntentService {
 
     @Override
     public IBinder onBind(Intent arg0) {
-        if (DBG) Log.d(TAG, "entering onBind()");
+        if (DBG) logd("entering onBind()");
         DMConfigureDB db = getConfigDB();   // wait for configure DB to initialize
-        if (DBG) Log.d(TAG, "returning mBinder");
+        if (DBG) logd("returning mBinder");
         return mBinder;
     }
 
@@ -508,18 +508,18 @@ public class DMClientService extends IntentService {
         try {
             return mDMConfigureTask.get(70, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            Log.e(TAG, "onBind() got InterruptedException waiting for config DB", e);
+            loge("onBind() got InterruptedException waiting for config DB", e);
         } catch (ExecutionException e) {
-            Log.e(TAG, "onBind() got ExecutionException waiting for config DB", e);
+            loge("onBind() got ExecutionException waiting for config DB", e);
         } catch (TimeoutException e) {
-            Log.e(TAG, "onBind() got TimeoutException waiting for config DB", e);
+            loge("onBind() got TimeoutException waiting for config DB", e);
         }
         return null;
     }
 
     String parseBootstrapServerId(byte[] data, boolean isWbxml) {
         String retServerId = NativeDM.parseBootstrapServerId(data, isWbxml);
-        if (DBG) Log.d(TAG, "parseBootstrapServerId retServerId=" + retServerId);
+        if (DBG) logd("parseBootstrapServerId retServerId=" + retServerId);
 
         if (DBG) {  // dump data for debug
             int logLevel = getConfigDB().getSyncMLLogLevel();
@@ -530,7 +530,7 @@ public class DMClientService extends IntentService {
                             + ".dump", MODE_WORLD_WRITEABLE);
                     os.write(data);
                     os.close();
-                    Log.d(TAG, "xml/wbxml file saved to "
+                    logd("xml/wbxml file saved to "
                             + getApplication().getFilesDir().getAbsolutePath());
 
                     if (isWbxml && logLevel == 2) {
@@ -541,18 +541,18 @@ public class DMClientService extends IntentService {
                                     + System.currentTimeMillis() + ".xml", MODE_WORLD_WRITEABLE);
                             xmlos.write(xml);
                             xmlos.close();
-                            Log.d(TAG, "wbxml2xml converted successful and saved to file");
+                            logd("wbxml2xml converted successful and saved to file");
                         }
                     }
                 }
                 catch (FileNotFoundException e) {
-                    Log.d(TAG, "unable to open file for wbxml, e=" + e.toString());
+                    logd("unable to open file for wbxml, e=" + e.toString());
                 }
                 catch (IOException e) {
-                    Log.d(TAG, "unable to write to wbxml file, e=" + e.toString());
+                    logd("unable to write to wbxml file, e=" + e.toString());
                 }
                 catch(Exception e) {
-                    Log.e(TAG, "Unexpected exception converting wbxml to xml, e=" + e.toString());
+                    loge("Unexpected exception converting wbxml to xml, e=" + e.toString());
                 }
             }
         }
@@ -561,7 +561,7 @@ public class DMClientService extends IntentService {
 
     private static int processBootstrapScript(byte[] data, boolean isWbxml, String serverId) {
         int retcode = NativeDM.processBootstrapScript(data, isWbxml, serverId);
-        if (DBG) Log.d(TAG, "processBootstrapScript retcode=" + retcode);
+        if (DBG) logd("processBootstrapScript retcode=" + retcode);
         return retcode;
     }
 
@@ -593,7 +593,7 @@ public class DMClientService extends IntentService {
             }
             out.close();
         } catch (IOException e) {
-            Log.e(TAG, "Error: copyFile exception", e);
+            loge("Error: copyFile exception", e);
             return false;
         }
         return true;
@@ -606,29 +606,29 @@ public class DMClientService extends IntentService {
     private boolean copyFilesFromAssets() {
         // Check files in assets folder
         String strDes = getFilesDir().getAbsolutePath() + "/dm";
-        if (DBG) Log.d(TAG, "w21034: directory is: " + strDes);
+        logd("Directory is: " + strDes);
         File dirDes = new File(strDes);
         if (dirDes.exists() && dirDes.isDirectory()) {
-            if (DBG) Log.d(TAG, "W21034:Predefined files already created: " + strDes);
+            logd("Predefined files already created: " + strDes);
             return true;
         }
-        if (DBG) Log.d(TAG, "Predefined files not created: " + strDes);
+        logd("Predefined files not created: " + strDes);
         if (!dirDes.mkdir()) {
-            if (DBG) Log.d(TAG, "Failed to create dir: " + dirDes.getAbsolutePath());
+            logd("Failed to create dir: " + dirDes.getAbsolutePath());
             return false;
         }
         // Create log directory.
         File dirLog = new File(dirDes, "log");
         // FIXME: don't ignore return value
         dirLog.mkdir();
-        if (DBG) Log.d(TAG, "w21034: read assets");
+        if (DBG) logd("read assets");
         try {
             AssetManager am = getAssets();
             String[] arrRoot = am.list("dm");
             int cnt = arrRoot.length;
-            if (DBG) Log.d(TAG, "w21034: assets count: " + cnt);
+            if (DBG) logd("assets count: " + cnt);
             for (int i = 0; i < cnt; i++) {
-                if (DBG) Log.d(TAG, "Root No. " + i + ':' + arrRoot[i]);
+                if (DBG) logd("Root No. " + i + ':' + arrRoot[i]);
                 File dir2 = new File(dirDes, arrRoot[i]);
                 if (!dir2.mkdir()) {
                     // FIXME: don't ignore return value
@@ -637,10 +637,10 @@ public class DMClientService extends IntentService {
                 }
                 String[] arrSub = am.list("dm/" + arrRoot[i]);
                 int cntSub = arrSub.length;
-                if (DBG) Log.d(TAG, arrRoot[i] + " has " + cntSub + " items");
+                if (DBG) logd(arrRoot[i] + " has " + cntSub + " items");
                 if (cntSub > 0) {
                     for (int j = 0; j < cntSub; j++) {
-                        if (DBG) Log.d(TAG, "Sub No. " + j + ':' + arrSub[j]);
+                        if (DBG) logd("Sub No. " + j + ':' + arrSub[j]);
                         File to2 = new File(dir2, arrSub[j]);
                         String strFrom = "dm/" + arrRoot[i] + '/' + arrSub[j];
                         InputStream in2 = am.open(strFrom);
@@ -661,6 +661,10 @@ public class DMClientService extends IntentService {
 
     private static void logd(String msg) {
         Log.d(TAG, msg);
+    }
+
+    private static void loge(String msg) {
+        Log.e(TAG, msg);
     }
 
     private static void loge(String msg, Throwable tr) {

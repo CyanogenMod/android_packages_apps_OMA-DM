@@ -61,7 +61,7 @@ class DMSession {
             if (DBG) logd("Start client session with server: " + mServerID);
             mResultCode = NativeDM.startClientSession(mServerID, this);
 
-            if (DBG) logd("startDmSession resultCode: " + mResultCode);
+            logd("startDmSession resultCode: " + mResultCode);
         } catch (RuntimeException e) {
             loge("Exception caught starting DM session", e);
         }
@@ -84,7 +84,7 @@ class DMSession {
                     + " alert string: " + alertStr);
             mResultCode = NativeDM.startFotaClientSession(serverID, alertStr, this);
 
-            if (DBG) logd("startDmSession resultCode: " + mResultCode);
+            logd("startDmSession resultCode: " + mResultCode);
         } catch (Exception e) {
             loge("Exception caught starting DM session", e);
         }
@@ -114,7 +114,7 @@ class DMSession {
                     mServerID,
                     LawmoContext.mCorrelator,
                     this);
-            if (DBG) logd("LAWMONotifySession resultCode: " + mResultCode);
+            logd("LAWMONotifySession resultCode: " + mResultCode);
         } catch (Exception e) {
             loge("Exception caught starting DM session", e);
         }
@@ -131,11 +131,11 @@ class DMSession {
         int ret = NativeDM.parsePkg0(data, notification);
         if (ret != DMResult.SYNCML_DM_SUCCESS) {
             if (ret != DMResult.SYNCML_DM_SESSION_AUTH_FAIL) {
-                if (DBG) logd("parsePkg0 return:" + ret);
+                logd("parsePkg0 return:" + ret);
                 return ret;
             }
             if (mDMClientService.getConfigDB().isDmNonceResyncEnabled()) {
-                if (DBG) logd("Nonce resync enabled, ignore as per OMA DM spec.");
+                logd("Nonce resync enabled, ignore as per OMA DM spec.");
                 return ret;
             }
         }
@@ -161,18 +161,18 @@ class DMSession {
 
         try {
             if (notification.getInitiator() == 1) {
-                if (DBG) logd("Start server initiated session");
+                logd("Start server initiated session");
                 mResultCode = NativeDM.startFotaServerSession(notification.getServerID(),
                         notification.getSessionID(),
                         this);
             } else {
-                if (DBG) logd("Start client initiated session");
+                logd("Start client initiated session");
                 String alertStr = "org.openmobilealliance.dm.firmwareupdate.userrequest";
                 mResultCode = NativeDM.startFotaClientSession(notification.getServerID(), alertStr,
                         this);
             }
 
-            if (DBG) logd("startDmSession resultCode: " + mResultCode);
+            logd("startDmSession resultCode: " + mResultCode);
 
             if (mResultCode == DMResult.SYNCML_DM_SUCCESS) {
                 mDMClientService.getConfigDB().setFotaServerID(notification.getServerID());

@@ -36,7 +36,7 @@ import android.util.Log;
  */
 public class DMDataConnectionService extends Service {
     private static final String TAG = "DMDataConnectionService";
-    private static final boolean DBG = DMClientService.DBG;
+    private static final boolean DBG = true;
 
     private ConnectivityManager mConnectivityManager;
 

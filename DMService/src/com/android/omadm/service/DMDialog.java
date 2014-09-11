@@ -53,7 +53,7 @@ public class DMDialog extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DMClientService.DBG) {
-            Log.d(TAG, "onCreate");
+            logd("onCreate");
         }
         final Intent intent = getIntent();
         mDlgType = intent.getAction();
@@ -129,7 +129,7 @@ public class DMDialog extends Activity {
         public void onClick(DialogInterface dialog, int which) {
             mResult = USER_PRESS_OK;
             if (DMClientService.DBG) {
-                Log.d(TAG, "Press:OK");
+                logd("Press:OK");
             }
             mDialog.dismiss();
             finish();
@@ -141,7 +141,7 @@ public class DMDialog extends Activity {
         public void onClick(DialogInterface dialog, int which) {
             mResult = USER_PRESS_CANCEL;
             if (DMClientService.DBG) {
-                Log.d(TAG, "Press:Cancel");
+                logd("Press:Cancel");
             }
             mDialog.dismiss();
             finish();
@@ -159,4 +159,7 @@ public class DMDialog extends Activity {
         super.onDestroy();
     }
 
+    private static void logd(String msg) {
+        Log.d(TAG, msg);
+    }
 }

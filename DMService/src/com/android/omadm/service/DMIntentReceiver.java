@@ -82,7 +82,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        if (DBG) Log.d(TAG, "Received new intent: " + action);
+        logd("Received new intent: " + action);
 
         if (action.equals(DMIntent.ACTION_WAP_PUSH_RECEIVED_INTERNAL)) {
             handleWapPushIntent(context, intent);
@@ -102,7 +102,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         } else if (action.equals(DMIntent.ACTION_DATA_CONNECTION_READY)) {
             handleDataConnectionReady(context);
         } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            Log.d(TAG, "Ignoring Intent.ACTION_BOOT_COMPLETED");
+            logd("Ignoring Intent.ACTION_BOOT_COMPLETED");
             //if (!(isPhoneTypeLTE() || isPhoneTypeCDMA3G(context))) {
             //    saveDevDetail(context);
             //    handleBootCompletedIntent(context);
@@ -113,7 +113,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 SharedPreferences p = context.getSharedPreferences(DMHelper.IMEI_PREFERENCE_KEY, 0);
                 String currGsmImei = p.getString(DMHelper.IMEI_VALUE_KEY, "");
                 if (currGsmImei != null && currGsmImei.equals(intent.getStringExtra("gsmimei"))) {
-                    Log.d(TAG, "IMEI already stored, continuing");
+                    logd("IMEI already stored, continuing");
                 } else {
                     SharedPreferences.Editor ed = p.edit();
                     ed.putString(DMHelper.IMEI_VALUE_KEY, intent.getStringExtra("gsmimei"));
@@ -129,7 +129,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         } else if (action.equals(DMIntent.ACTION_INJECT_PACKAGE_0_INTERNAL)) {
             String strServerID = intent.getStringExtra(DMIntent.FIELD_SERVERID);
             if (strServerID == null || strServerID.trim().isEmpty()) {
-                Log.d(TAG, "Error! Can't inject package0. The required extras parameter '" +
+                logd("Error! Can't inject package0. The required extras parameter '" +
                         DMIntent.FIELD_SERVERID + "' is null or an empty string.");
                 return;
             }
@@ -138,23 +138,23 @@ public class DMIntentReceiver extends BroadcastReceiver {
             newIntent.putExtra(DMIntent.FIELD_REQUEST_ID, System.currentTimeMillis());
             newIntent.putExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_CLIENT_SESSION_REQUEST);
             newIntent.putExtra(DMIntent.FIELD_SERVERID, strServerID);
-            Log.d(TAG, "XXX received ACTION_INJECT_PACKAGE_0_INTERNAL, starting"
+            logd("XXX received ACTION_INJECT_PACKAGE_0_INTERNAL, starting"
                     + " TYPE_CLIENT_SESSION_REQUEST with ID "
                     + newIntent.getLongExtra(DMIntent.FIELD_REQUEST_ID, 1234));
             newIntent.setClass(context, DMClientService.class);
             context.startService(newIntent);
         } else if (action.equals(DMIntent.ACTION_SET_SERVER_CONFIG)) {
-            Log.d(TAG, "ACTION_SET_SERVER_CONFIG received");
+            logd("ACTION_SET_SERVER_CONFIG received");
             String hostUrl = intent.getStringExtra(DMIntent.FIELD_SERVER_URL);
             String proxyAddress = intent.getStringExtra(DMIntent.FIELD_PROXY_ADDRESS);
-            Log.d(TAG, "server URL: " + hostUrl + " proxy address: " + proxyAddress);
+            logd("server URL: " + hostUrl + " proxy address: " + proxyAddress);
             DMHelper.setServerUrl(context, hostUrl);
             DMHelper.setProxyHostname(context, proxyAddress);
         } else if (action.equals(DMIntent.ACTION_CANCEL_SESSION)) {
             // create intent and start DM service
             Intent newIntent = new Intent(DMIntent.LAUNCH_INTENT);
             newIntent.putExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_CANCEL_DM_SESSION);
-            Log.d(TAG, "cancelling DM Session");
+            logd("cancelling DM Session");
             newIntent.setClass(context, DMClientService.class);
             context.startService(newIntent);
         }
@@ -164,14 +164,14 @@ public class DMIntentReceiver extends BroadcastReceiver {
     private void handleClientInitiatedFotaIntent(Context context, Intent intent) {
         String strServerID = intent.getStringExtra(DMIntent.FIELD_SERVERID);
         if (TextUtils.isEmpty(strServerID)) {
-            Log.d(TAG, "Error! Can't start FOTA session: " +
+            logd("Error! Can't start FOTA session: " +
                     DMIntent.FIELD_SERVERID + " is null or an empty string.");
             return;
         }
 
         String alertString = intent.getStringExtra(DMIntent.FIELD_ALERT_STR);
         if (TextUtils.isEmpty(alertString)) {
-            Log.d(TAG, "Error! Can't start FOTA session: " +
+            logd("Error! Can't start FOTA session: " +
                     DMIntent.FIELD_ALERT_STR + " is null or an empty string.");
             return;
         }
@@ -190,16 +190,16 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         if (isWifiConnected(context) || isDataNetworkAcceptable(context)) {
             if (!isWifiConnected(context) && isDataNetworkAcceptable(context) && isPhoneTypeLTE()) {
-                Log.d(TAG, "handleClientInitiatedFotaIntent, start apn monitoring service"
+                logd("handleClientInitiatedFotaIntent, start apn monitoring service"
                         + " for requestID " + requestID);
                 setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
                 startDataConnectionService(context);
             } else {
-                Log.d(TAG, "handleClientInitiatedFotaIntent starting DM session");
+                logd("handleClientInitiatedFotaIntent starting DM session");
                 startDMSession(context);
             }
         } else {
-            Log.d(TAG, "handleClientInitiatedFotaIntent: start data/call state monitoring");
+            logd("handleClientInitiatedFotaIntent: start data/call state monitoring");
             startDataConnectionService(context);
         }
     }
@@ -209,12 +209,12 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         int currentState = getState(context);
 
-        Log.d(TAG, "handleWapPushIntent() current state: " + currentState);
+        logd("handleWapPushIntent() current state: " + currentState);
 
         // if current state is already "session in progress" - ignore new message;
         // otherwise remove old message and process a new one.
         if (currentState == DMHelper.STATE_SESSION_IN_PROGRESS) {
-            Log.e(TAG, "current state is 'Session-in-Progress', ignoring new message.");
+            loge("current state is 'Session-in-Progress', ignoring new message.");
             return;
         }
 
@@ -223,11 +223,11 @@ public class DMIntentReceiver extends BroadcastReceiver {
         //clean fota apn resources and stop using fota apn
         if (isPhoneTypeLTE()) {
             int mgetFotaApnState = getFotaApnState(context);
-            Log.d(TAG, "handleWapPushIntent, check if necessary to stop using fota apn "
+            logd("handleWapPushIntent, check if necessary to stop using fota apn "
                     + mgetFotaApnState);
             if (mgetFotaApnState != DMHelper.FOTA_APN_STATE_INIT) {
                 // resetting FOTA APN STATE
-                Log.d(TAG, "XXX resetting FOTA APN state");
+                logd("XXX resetting FOTA APN state");
                 setFotaApnState(context, DMHelper.FOTA_APN_STATE_INIT);
                 stopUsingFotaApn(context);
                 DMHelper.cleanFotaApnResources(context);
@@ -238,7 +238,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         boolean result = parseAndSaveWapPushMessage(context, intent);
 
         if (!result) {
-            Log.e(TAG, "handleWapPushIntent(): error in parseAndSaveWapPushMessage()");
+            loge("handleWapPushIntent(): error in parseAndSaveWapPushMessage()");
             DMHelper.cleanAllResources(context);
             return;
         }
@@ -247,7 +247,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
             //check UI mode and prepare and start process
             preprocess(context, currentState);
         } else {
-            Log.d(TAG, "WapPush arrived before tree initialization");
+            logd("WapPush arrived before tree initialization");
             initialWapPending = true;
             Intent intentConnmoInit = new Intent("com.android.omadm.service.wait_timer_alert");
             context.sendBroadcast(intentConnmoInit);
@@ -258,7 +258,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         // check if message is not expired
         if (DMHelper.isMessageExpired(context)) {
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "handleUserConfirmedSession(): message is expired.");
+            logd("handleUserConfirmedSession(): message is expired.");
             return;
         }
 
@@ -270,18 +270,18 @@ public class DMIntentReceiver extends BroadcastReceiver {
         // Check if DM tree already has been generated. Start service to generate tree
         // in case if required. It may happened only once during first boot.
         if (!treeExist(context)) {
-            Log.d(TAG, "Boot completed: there is no DM Tree. Start service to generate tree.");
+            logd("Boot completed: there is no DM Tree. Start service to generate tree.");
             Intent intent = new Intent(DMIntent.LAUNCH_INTENT);
             intent.putExtra("NodePath", ".");
             intent.putExtra(DMIntent.FIELD_REQUEST_ID, -2L);
             intent.setClass(context, DMClientService.class);
             context.startService(intent);
             if (!initialWapPending) {
-                Log.d(TAG, "handleBootCompletedIntent, no initial WapPush pending.");
+                logd("handleBootCompletedIntent, no initial WapPush pending.");
                 DMHelper.cleanAllResources(context);
                 return;
             } else {
-                Log.d(TAG, "handleBootCompletedIntent, initial WapPush pending.");
+                logd("handleBootCompletedIntent, initial WapPush pending.");
                 initialWapPending = false;
                 setState(context, DMHelper.STATE_PENDING_MESSAGE);
             }
@@ -289,7 +289,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
 //        if (isPhoneTypeLTE()) {
 //            int fotaApnState = getFotaApnState(context);
-//            Log.d(TAG, "handleBootCompletedIntent, check if need to stop using fota apn "
+//            logd("handleBootCompletedIntent, check if need to stop using fota apn "
 //                    + fotaApnState);
 //            if (fotaApnState != DMHelper.FOTA_APN_STATE_INIT) {
                 // resetting FOTA APN STATE
@@ -303,21 +303,21 @@ public class DMIntentReceiver extends BroadcastReceiver {
         int currentState = getState(context);
 
         if (currentState == DMHelper.STATE_IDLE) {
-            Log.d(TAG, "Boot completed: there is no message to proceed.");
+            logd("Boot completed: there is no message to proceed.");
             return;
         }
 
         // check if message is not expired
         if (DMHelper.isMessageExpired(context)) {
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "handleBootCompletedIntent(): the message is expired.");
+            logd("handleBootCompletedIntent(): the message is expired.");
             return;
         }
 
         // initiate mUIMode and mData from preferences
         if (!initFromSharedPreferences(context)) {
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "handleBootCompletedIntent(): cannot init from shared preferences");
+            logd("handleBootCompletedIntent(): cannot init from shared preferences");
             return;
         }
 
@@ -331,47 +331,45 @@ public class DMIntentReceiver extends BroadcastReceiver {
             case DMHelper.STATE_IDLE:
                 // nothing there
                 DMHelper.cleanAllResources(context);
-                Log.d(TAG, "Time alert: there is no message to proceed.");
+                logd("Time alert: there is no message to proceed.");
                 break;
         }
 
         if (currentState == DMHelper.STATE_IDLE) {
             // nothing there
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "Time alert: there is no message to proceed.");
+            logd("Time alert: there is no message to proceed.");
         } else if (DMHelper.isMessageExpired(context)) {
             // check if message is not expired
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "Warning from handleTimeAlertIntent(): the message is expired.");
+            logd("Warning from handleTimeAlertIntent(): the message is expired.");
         } else if (currentState == DMHelper.STATE_SESSION_IN_PROGRESS) {
             // session in progress; doing nothing.
-            Log.d(TAG, "Time alert: session in progress; doing nothing.");
+            logd("Time alert: session in progress; doing nothing.");
             DMHelper.subscribeForTimeAlert(context,
                     DMHelper.TIME_CHECK_STATUS_AFTER_STARTING_DM_SERVICE);
         } else if (currentState == DMHelper.STATE_APPROVED_BY_USER) {
             // approved by user: try to start session or data/call monitoring service
-            Log.d(TAG, "Time alert: state 'approved by user'; starting process");
+            logd("Time alert: state 'approved by user'; starting process");
             startProcess(context);
         } else if (currentState == DMHelper.STATE_PENDING_MESSAGE) {
             // approved by user: try to start session or data/call monitoring service pending
-            Log.d(TAG,
-                    "Time alert: state 'pending message'; read from preferences starting preprocess");
+            logd("Time alert: state 'pending message'; read from preferences starting preprocess");
 
             // initiate mUIMode and mData from preferences
             if (!initFromSharedPreferences(context)) {
                 DMHelper.cleanAllResources(context);
-                Log.d(TAG,
-                        "Warning from handleTimeAlertIntent(): cannot init from shared preferences");
+                logd("Warning from handleTimeAlertIntent(): cannot init from shared preferences");
                 return;
             }
             preprocess(context, currentState);
         } else {
-            Log.e(TAG, "Error from handleTimeAlertIntent(): unknown state " + currentState);
+            loge("Error from handleTimeAlertIntent(): unknown state " + currentState);
         }
     }
 
     private static void handleNotifyResultToServer(Context context, Intent intent) {
-        Log.d(TAG, "Inside handleNotifyResultToServer");
+        logd("Inside handleNotifyResultToServer");
 
         // Save message
         SharedPreferences p = context.getSharedPreferences(DMHelper.FOTA_APN_PREFERENCE_KEY, 0);
@@ -389,11 +387,11 @@ public class DMIntentReceiver extends BroadcastReceiver {
         if (isDataNetworkAcceptable(context) && !isWifiConnected(context) && isPhoneTypeLTE()) {
             int mgetFotaApnState = getFotaApnState(context);
             if (mgetFotaApnState != DMHelper.FOTA_APN_STATE_INIT) {
-                Log.d(TAG, "there must be a pending session, return");
+                logd("there must be a pending session, return");
                 return;
             }
             // for LTE and eHRPD coverage , switch the apn before FDM
-            Log.d(TAG, "handleNotifyResultToServer starting FOTA APN");
+            logd("handleNotifyResultToServer starting FOTA APN");
             setFotaApnState(context, DMHelper.FOTA_APN_STATE_REPORT_DM_SESSION);
             startDataConnectionService(context);
         } else {
@@ -403,9 +401,9 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     // start session if we have network connectivity
     private void handleDataConnectionReady(Context context) {
-        Log.d(TAG, "Inside handleDataConnectionReady");
+        logd("Inside handleDataConnectionReady");
         int fotaApnState = getFotaApnState(context);
-        Log.d(TAG, "FOTA APN state is " + fotaApnState);
+        logd("FOTA APN state is " + fotaApnState);
 
         if (fotaApnState == DMHelper.FOTA_APN_STATE_REPORT_DM_SESSION) {
             setFotaApnState(context, DMHelper.FOTA_APN_STATE_REPORT_DM_SESSION_RPTD);
@@ -415,7 +413,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
             // check if message is not expired
             if (DMHelper.isMessageExpired(context)) {
                 DMHelper.cleanAllResources(context);
-                Log.d(TAG, "Warning from handleApnStateActive(): the message is expired.");
+                logd("Warning from handleApnStateActive(): the message is expired.");
                 return;
             }
 
@@ -424,18 +422,18 @@ public class DMIntentReceiver extends BroadcastReceiver {
             // nothing to do here
             if (currentState == DMHelper.STATE_IDLE) {
                 DMHelper.cleanAllResources(context);
-                Log.d(TAG, "handleApnStateActive(): there is no message to proceed.");
+                logd("handleApnStateActive(): there is no message to proceed.");
                 return;
             }
 
             if (currentState == DMHelper.STATE_SESSION_IN_PROGRESS) {
-                Log.d(TAG, "handleApnStateActive(): session in progress; doing nothing.");
+                logd("handleApnStateActive(): session in progress; doing nothing.");
                 return;
             }
 
             startDMSession(context);
         } else {
-            Log.d(TAG, "handleApnStateActive: NO ACTION NEEDED");
+            logd("handleApnStateActive: NO ACTION NEEDED");
         }
     }
 
@@ -444,7 +442,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         setState(context, currentState);
 
-        Log.d(TAG, "From preprocess().... Current state = " + currentState);
+        logd("From preprocess().... Current state = " + currentState);
 
         // check UI mode. If updates has been replaced with the new one and user already
         // confirmed - we are skipping confirmation.
@@ -452,7 +450,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 && currentState != DMHelper.STATE_APPROVED_BY_USER) {
 
             // user confirmation is required
-            Log.d(TAG, "User confirmation is required");
+            logd("User confirmation is required");
             DMHelper.postConfirmationNotification(context);
             setState(context, DMHelper.STATE_PENDING_MESSAGE);
 
@@ -465,10 +463,10 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         if (mUIMode == DMHelper.UI_MODE_INFORMATIVE) {
             // required notification, just inform the user
-            Log.d(TAG, "User notification is required");
+            logd("User notification is required");
             DMHelper.postInformativeNotification_message1(context);
         } else {
-            Log.d(TAG, "Silent DM session: silent mode or user already has approved.");
+            logd("Silent DM session: silent mode or user already has approved.");
         }
 
         // try to start DM session or start Data and Call State Monitoring Service
@@ -484,7 +482,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         mData = data;
 
         if (data == null || data.length < 25) {
-            Log.e(TAG, "parseAndSaveWapPushMessage: data[] is null or length < 25.");
+            loge("parseAndSaveWapPushMessage: data[] is null or length < 25.");
             return false;
         }
 
@@ -496,7 +494,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         int serverIdLength = data[23];    // must be equal to data.length-24
 
         if (serverIdLength <= 0) {
-            Log.e(TAG, "parseAndSaveWapPushMessage: serverIdLength is invalid: " + serverIdLength);
+            loge("parseAndSaveWapPushMessage: serverIdLength is invalid: " + serverIdLength);
             return false;
         }
 
@@ -536,7 +534,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
             out.write(mData);
             out.close();
         } catch (IOException e) {
-            Log.e(TAG, "IOException while creating dmpostponed.dat", e);
+            loge("IOException while creating dmpostponed.dat", e);
         }
 
         return true;
@@ -553,13 +551,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
 //
 //        @Override
 //        public void run() {
-//            Log.d(TAG, "Enter dmParseSaveWapMsgThread tid=" + Thread.currentThread().getId());
+//            logd("Enter dmParseSaveWapMsgThread tid=" + Thread.currentThread().getId());
 //            try {
 //                FileOutputStream out = new FileOutputStream(DMHelper.POSTPONED_DATA_PATH);
 //                out.write(mData);
 //                out.close();
 //            } catch (IOException e) {
-//                Log.e(TAG, "IOException while creating dmpostponed.dat", e);
+//                loge("IOException while creating dmpostponed.dat", e);
 //            } finally {
 //                mPendingResult.finish();
 //            }
@@ -579,7 +577,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         // try to start DM session or start monitoring service.
         if (isWifiConnected(context) || isDataNetworkAcceptable(context)) {
             if ((!isWifiConnected(context)) && isDataNetworkAcceptable(context) && isPhoneTypeLTE()) {
-                Log.d(TAG, "startProcess(), start apn state monitoring service");
+                logd("startProcess(), start apn state monitoring service");
                 setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
                 //start apn state monitoring service
                 startDataConnectionService(context);
@@ -614,7 +612,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     //start DM session.
     private void startDMSession(Context context) {
-        if (DBG) logd("startDMSession");
+        logd("startDMSession");
         // get request ID from the shared preferences (the message time stamp used)
         SharedPreferences p = context.getSharedPreferences(DMHelper.DM_PREFERENCES_KEY, 0);
 
@@ -632,7 +630,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
             intent.putExtra(DMIntent.FIELD_TYPE, DMIntent.TYPE_FOTA_CLIENT_SESSION_REQUEST);
             intent.putExtra(DMIntent.FIELD_SERVERID, serverID);
             intent.putExtra(DMIntent.FIELD_ALERT_STR, alertString);
-            Log.d(TAG, "starting TYPE_FOTA_CLIENT_SESSION_REQUEST: serverID="
+            logd("starting TYPE_FOTA_CLIENT_SESSION_REQUEST: serverID="
                     + serverID + " alertString=" + alertString
                     + " requestID=" + requestID);
         } else {
@@ -643,7 +641,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
                 mData = setDataFromFile(context);
 
                 if (mData == null) {
-                    Log.d(TAG, "Error. Cannot read data from file dmpostponed.dat");
+                    logd("Error. Cannot read data from file dmpostponed.dat");
                     DMHelper.cleanAllResources(context);
                     return;
                 }
@@ -665,7 +663,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     // start data connection service
     private static void startDataConnectionService(Context context) {
-        Log.d(TAG, "Inside startDataConnectionService");
+        logd("Inside startDataConnectionService");
         DMHelper.subscribeForTimeAlert(context,
                 DMHelper.TIME_CHECK_STATUS_AFTER_STARTING_MONITORING_SERVICE);
         Intent intent = new Intent(DMIntent.ACTION_START_DATA_CONNECTION_SERVICE);
@@ -675,7 +673,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     // stop data connection service
     private static void stopDataConnectionService(Context context) {
-        Log.d(TAG, "Inside stopDataConnectionService");
+        logd("Inside stopDataConnectionService");
         Intent intent = new Intent(DMIntent.ACTION_START_DATA_CONNECTION_SERVICE);
         intent.setClass(context, DMDataConnectionService.class);
         context.stopService(intent);
@@ -692,14 +690,14 @@ public class DMIntentReceiver extends BroadcastReceiver {
         long receivedRequestId = intent.getLongExtra(DMIntent.FIELD_REQUEST_ID, -1);
 
         if (receivedRequestId == -2) {
-            Log.d(TAG, "handleDmServiceResult, tree initialisation session.");
+            logd("handleDmServiceResult, tree initialisation session.");
             return;
         }
 
         // clear fota apn resources and stop using fota apn
         if (isPhoneTypeLTE()) {
             int fotaApnState = getFotaApnState(context);
-            Log.d(TAG, "handleDmServiceResult, chk if need to stop using fota apn "
+            logd("handleDmServiceResult, chk if need to stop using fota apn "
                     + fotaApnState);
             if (fotaApnState != DMHelper.FOTA_APN_STATE_INIT) {
                 // resetting FOTA APN STATE
@@ -712,7 +710,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         }
 
         if (savedRequestId != receivedRequestId) {
-            Log.e(TAG, "request ID " + receivedRequestId + " from result intent doesn't "
+            loge("request ID " + receivedRequestId + " from result intent doesn't "
                     + "match saved request ID " + savedRequestId + ", ignored");
 //            return;
         }
@@ -721,13 +719,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         int uiMode = p.getInt(DMHelper.DM_UI_MODE_KEY, -1);
         mUIMode = uiMode;
-        Log.d(TAG, "mUIMode is: " + uiMode);
+        logd("mUIMode is: " + uiMode);
         if (uiMode == DMHelper.UI_MODE_INFORMATIVE) {
             if (sessionResult == DMResult.SYNCML_DM_SUCCESS) {
-                Log.d(TAG, "Displaying success notification message2");
+                logd("Displaying success notification message2");
                 DMHelper.postInformativeNotification_message2_success(context);
             } else {
-                Log.d(TAG, "Displaying Fail notification message2");
+                logd("Displaying Fail notification message2");
                 DMHelper.postInformativeNotification_message2_fail(context);
             }
             ed.putInt(DMHelper.DM_UI_MODE_KEY, -1);
@@ -736,7 +734,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         if (sessionResult == DMResult.SYNCML_DM_SUCCESS) {
             DMHelper.cleanAllResources(context);
-            Log.d(TAG, "Finished success.");
+            logd("Finished success.");
             return;
         }
 
@@ -759,13 +757,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         // check if max number has not been exceeded
         if (numberOfSessionAttempts > DMHelper.MAX_SESSION_ATTEMPTS) {
-            Log.d(TAG, "Error. Number of attempts to start DM session exceed MAX.");
+            logd("Error. Number of attempts to start DM session exceed MAX.");
             return false;
         }
 
         // check if message is expired or not
         if (DMHelper.isMessageExpired(context)) {
-            Log.d(TAG, "Error from canRestartSession(): the message is expired.");
+            logd("Error from canRestartSession(): the message is expired.");
             return false;
         }
 
@@ -825,7 +823,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         int length = p.getInt("length", -1);
 
         if (length <= 0) {
-            //Log.d(TAG, "Error. Invalid postponed data length.");
+            //logd("Error. Invalid postponed data length.");
             return null;
         }
 
@@ -834,14 +832,14 @@ public class DMIntentReceiver extends BroadcastReceiver {
         try {
             FileInputStream in = new FileInputStream(DMHelper.POSTPONED_DATA_PATH);
             if (in.read(data) <= 0) {
-                Log.d(TAG, "Invalid postponed data.");
+                logd("Invalid postponed data.");
                 in.close();
                 return null;
             }
             in.close();
             return data;
         } catch (IOException e) {
-            Log.e(TAG, "IOException", e);
+            loge("IOException", e);
             return null;
         }
     }
@@ -852,10 +850,10 @@ public class DMIntentReceiver extends BroadcastReceiver {
             File dirDes = new File(strTreeHomeDir);
 
             if (dirDes.exists() && dirDes.isDirectory()) {
-                Log.d(TAG, "DM Tree exists:" + strTreeHomeDir);
+                logd("DM Tree exists:" + strTreeHomeDir);
                 return true;
             } else {
-                Log.d(TAG, "DM Tree NOT exists:" + strTreeHomeDir);
+                logd("DM Tree NOT exists:" + strTreeHomeDir);
                 return false;
             }
         } else {
@@ -865,7 +863,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     // set current state
     private static void setFotaApnState(Context context, int state) {
-        Log.d(TAG, "setFotaApnState: " + state);
+        logd("setFotaApnState: " + state);
         SharedPreferences p = context.getSharedPreferences(DMHelper.FOTA_APN_PREFERENCE_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.putInt(DMHelper.FOTA_APN_STATE_KEY, state);
@@ -883,7 +881,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
      * @param context the BroadcastReceiver context
      */
     private static void stopUsingFotaApn(Context context) {
-        Log.d(TAG, "stopUsingFotaApn");
+        logd("stopUsingFotaApn");
 
         ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -897,7 +895,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     // Function which will send intents to start FDM
     private static void sendNotifyIntent(Context context) {
-        Log.d(TAG, "Inside sendNotifyIntent");
+        logd("Inside sendNotifyIntent");
 
         SharedPreferences p = context.getSharedPreferences(DMHelper.FOTA_APN_PREFERENCE_KEY, 0);
         String lawmoResult = p.getString(DMHelper.LAWMO_RESULT_KEY, null);
@@ -907,7 +905,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         String correlator = p.getString(DMHelper.CORRELATOR_KEY, null);
         String serverID = p.getString(DMHelper.SERVER_ID_KEY, null);
 
-        Log.d(TAG, "sendNotifyIntent Input==>\n" + " lawmoResult="
+        logd("sendNotifyIntent Input==>\n" + " lawmoResult="
                 + lawmoResult + '\n' + "fotaResult="
                 + fotaResult + '\n' + " pkgURI="
                 + pkgURI + '\n' + " alertType="
@@ -939,31 +937,31 @@ public class DMIntentReceiver extends BroadcastReceiver {
             context.startService(lawmofdmintent);
         } else {
             // just return for now
-            Log.d(TAG, "No Action, Just return for now");
+            logd("No Action, Just return for now");
         }
     }
 
     private static boolean isWifiConnected(Context context) {
-        Log.d(TAG, "Inside isWifiConnected");
+        logd("Inside isWifiConnected");
 
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) {
-            Log.d(TAG, "can't get Connectivity Service");
+            logd("can't get Connectivity Service");
             return false;
         }
 
         NetworkInfo ni = cm.getActiveNetworkInfo();
         if (ni == null) {
-            Log.d(TAG, "NetworkInfo is null");
+            logd("NetworkInfo is null");
             return false;
         }
         if (!ni.isConnected()) {
-            Log.d(TAG, "Network is not connected");
+            logd("Network is not connected");
             return false;
         }
         if (ni.getType() != ConnectivityManager.TYPE_WIFI) {
-            Log.d(TAG, "network type is not wifi");
+            logd("network type is not wifi");
             return false;
         }
 
@@ -980,10 +978,10 @@ public class DMIntentReceiver extends BroadcastReceiver {
         TelephonyManager tm = (TelephonyManager) context
                 .getSystemService(Context.TELEPHONY_SERVICE);
         if ((tm.getCurrentPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) && !isPhoneTypeLTE()) {
-            Log.d(TAG, "3G CDMA phone");
+            logd("3G CDMA phone");
             return true;
         }
-        Log.d(TAG, "Non-CDMA or 4G Device");
+        logd("Non-CDMA or 4G Device");
         return false;
     }
 
@@ -994,7 +992,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         int callState = tm.getCallState();
         if (callState != TelephonyManager.CALL_STATE_IDLE) {
-            if (DBG) logd("Call state not idle: " + callState);
+            logd("Call state not idle: " + callState);
             return false;
         }
 
@@ -1006,17 +1004,17 @@ public class DMIntentReceiver extends BroadcastReceiver {
             case TelephonyManager.NETWORK_TYPE_EVDO_B:
             case TelephonyManager.NETWORK_TYPE_LTE:
             case TelephonyManager.NETWORK_TYPE_EHRPD:
-                if (DBG) logd("Data network type is acceptable: " + dataNetworkType);
+                logd("Data network type is acceptable: " + dataNetworkType);
                 return true;
 
             default:
-                if (DBG) logd("Data network type is not acceptable: " + dataNetworkType);
+                logd("Data network type is not acceptable: " + dataNetworkType);
                 return false;
         }
     }
 
     private static void saveDevDetail(Context context) {
-        Log.d(TAG, "Inside saveDevDetail");
+        logd("Inside saveDevDetail");
 
         String swVer = SystemProperties.get("ro.build.version.full");
         if (TextUtils.isEmpty(swVer)) {
@@ -1029,10 +1027,10 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
         SharedPreferences.Editor ed = p.edit();
         if (TextUtils.isEmpty(currFwV)) {
-            Log.d(TAG, "First powerup or powerup after FDR, save current SwV");
+            logd("First powerup or powerup after FDR, save current SwV");
             ed.putString(CURR_FW_VER, swVer);
         } else if (!(currFwV.equals(swVer))) {
-            Log.d(TAG, "System Update success, save previous FwV and LastUpdateTime");
+            logd("System Update success, save previous FwV and LastUpdateTime");
             ed.putString(PRE_FW_VER, currFwV);
             ed.putString(CURR_FW_VER, swVer);
             SimpleDateFormat simpleDateFormat;
@@ -1048,7 +1046,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         WifiInfo wi = wm.getConnectionInfo();
         String wMacAddr = (wi == null) ? null : wi.getMacAddress();
-        Log.d(TAG, "WiFi Mac address " + wMacAddr);
+        logd("WiFi Mac address " + wMacAddr);
         if (!TextUtils.isEmpty(wMacAddr)) {
             ed.putString(WIFI_MAC_ADDR, wMacAddr);
         }
@@ -1057,5 +1055,13 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     private static void logd(String msg) {
         Log.d(TAG, msg);
+    }
+
+    private static void loge(String msg) {
+        Log.e(TAG, msg);
+    }
+
+    private static void loge(String msg, Throwable tr) {
+        Log.e(TAG, msg, tr);
     }
 }

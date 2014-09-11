@@ -44,7 +44,7 @@ public class DMSessionConfirmAlertActivity extends Activity {
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "Activity DM session confirmation has been started.");
+        logd("Activity DM session confirmation has been started.");
         super.onResume();
         showDialog();
     }
@@ -97,7 +97,7 @@ public class DMSessionConfirmAlertActivity extends Activity {
     }
 
     private void userConfirmedSession() {
-        Log.d(TAG, "userConfirmedSession");
+        logd("userConfirmedSession");
         Intent intent = new Intent(DMIntent.ACTION_USER_CONFIRMED_DM_SESSION);
         sendBroadcast(intent);
 
@@ -106,7 +106,7 @@ public class DMSessionConfirmAlertActivity extends Activity {
     }
 
     private void userDeniedSession() {
-        Log.d(TAG, "userDeniedSession");
+        logd("userDeniedSession");
         DMHelper.cleanAllResources(this);
 
         finishMe();
@@ -128,4 +128,7 @@ public class DMSessionConfirmAlertActivity extends Activity {
         finish();
     }
 
+    private static void logd(String msg) {
+        Log.d(TAG, msg);
+    }
 }
