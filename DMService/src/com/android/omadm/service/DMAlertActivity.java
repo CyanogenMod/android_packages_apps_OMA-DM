@@ -100,7 +100,7 @@ public class DMAlertActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (DBG) {
-            Log.d(TAG, "onCreate");
+            logd("onCreate");
         }
 
         final Intent intent = getIntent();
@@ -109,16 +109,16 @@ public class DMAlertActivity extends Activity {
         mIcon = intent.getIntExtra("Icon", -1);
         mTimeout = intent.getIntExtra("Timeout", 0);
         if (DBG) {
-            Log.d(TAG, "mMessage: " + mMessage);
+            logd("mMessage: " + mMessage);
         }
         if (DBG) {
-            Log.d(TAG, "mTitle: " + mTitle);
+            logd("mTitle: " + mTitle);
         }
         if (DBG) {
-            Log.d(TAG, "mIcon: " + mIcon);
+            logd("mIcon: " + mIcon);
         }
         if (DBG) {
-            Log.d(TAG, "mTimeout: " + mTimeout);
+            logd("mTimeout: " + mTimeout);
         }
 
         String action = intent.getAction();
@@ -130,15 +130,15 @@ public class DMAlertActivity extends Activity {
             mType = TEXTINPUT_ALERT_DIALOG;
             mMaxLength = intent.getIntExtra("MaxLength", 80);
             if (DBG) {
-                Log.d(TAG, "mMaxLength: " + mMaxLength);
+                logd("mMaxLength: " + mMaxLength);
             }
             mInputType = intent.getIntExtra("InputType", InputType.TYPE_CLASS_TEXT);
             if (DBG) {
-                Log.d(TAG, "mInputType: " + mInputType);
+                logd("mInputType: " + mInputType);
             }
             mResultData = intent.getStringExtra("DefaultText");
             if (DBG) {
-                Log.d(TAG, "mResultData: " + mResultData);
+                logd("mResultData: " + mResultData);
             }
         } else if (action.equals(DMIntent.SHOW_SINGLECHOICE_ALERT_DLG)) {
             mType = SINGLECHOICE_ALERT_DIALOG;
@@ -146,24 +146,24 @@ public class DMAlertActivity extends Activity {
             mCheckedItem = intent.getIntExtra("CheckedItem", -1);
             for (int i = 0; i < mChoices.length; i++) {
                 if (DMClientService.DBG) {
-                    Log.d(TAG, "mChoices: " + i + ": " + mChoices[i]);
+                    logd("mChoices: " + i + ": " + mChoices[i]);
                 }
             }
             if (DMClientService.DBG) {
-                Log.d(TAG, "mCheckedItem: " + mCheckedItem);
+                logd("mCheckedItem: " + mCheckedItem);
             }
         } else if (action.equals(DMIntent.SHOW_MULTICHOICE_ALERT_DLG)) {
             mType = MULTICHOICE_ALERT_DIALOG;
             mChoices = intent.getStringArrayExtra("Choices");
             for (int i = 0; i < mChoices.length; i++) {
                 if (DMClientService.DBG) {
-                    Log.d(TAG, "mChoices " + i + ": " + mChoices[i]);
+                    logd("mChoices " + i + ": " + mChoices[i]);
                 }
             }
             mCheckedItems = intent.getBooleanArrayExtra("CheckedItems");
             for (int i = 0; i < mCheckedItems.length; i++) {
                 if (DMClientService.DBG) {
-                    Log.d(TAG, "CheckedItems " + i + ": " + mCheckedItems[i]);
+                    logd("CheckedItems " + i + ": " + mCheckedItems[i]);
                 }
             }
         } else if (action.equals(DMIntent.SHOW_PROGRESS_ALERT_DLG)) {
@@ -172,26 +172,26 @@ public class DMAlertActivity extends Activity {
             mType = HIDE_PROGRESS_ALERT_DIALOG;
             onFinish();
             if (DMClientService.DBG) {
-                Log.d(TAG, "HIDE_PROGRESS_ALERT_DLG");
+                logd("HIDE_PROGRESS_ALERT_DLG");
             }
             return;
         } else if (action.equals(DMIntent.CANCEL_ALERT_DLG)) {
             mType = CANCEL_ALERT_DIALOG;
             onFinish();
             if (DMClientService.DBG) {
-                Log.d(TAG, "CANCEL_ALERT_DIALOG");
+                logd("CANCEL_ALERT_DIALOG");
             }
             return;
         } else {
             if (DMClientService.DBG) {
-                Log.d(TAG, "TODO: new dialog type support!");
+                logd("TODO: new dialog type support!");
             }
             return;
         }
 
         if (null != mDialog) {
             if (DMClientService.DBG) {
-                Log.d(TAG, "Cancel previous dialog!");
+                logd("Cancel previous dialog!");
             }
             mDialog.dismiss();
             mDialog = null;
@@ -211,7 +211,7 @@ public class DMAlertActivity extends Activity {
 
         if (mTimeout <= 0 || mTimeout > 300) {
             if (DMClientService.DBG) {
-                Log.d(TAG, "Forcing the default and max Timeout to 5mins");
+                logd("Forcing the default and max Timeout to 5mins");
             }
             mTimeout = 300; //forcing the default and max timeout to 5mins
             //return;
@@ -224,7 +224,7 @@ public class DMAlertActivity extends Activity {
                 mResultCode = DMAlert.DM_SERVICE_ALERT_RESP_TIMEOUT;
                 onFinish();
                 if (DMClientService.DBG) {
-                    Log.d(TAG, "DMAlert.DM_SERVICE_ALERT_RESP_TIMEOUT");
+                    logd("DMAlert.DM_SERVICE_ALERT_RESP_TIMEOUT");
                 }
             }
         };
@@ -247,7 +247,7 @@ public class DMAlertActivity extends Activity {
     @Override
     protected AlertDialog onCreateDialog(int id) {
         if (DMClientService.DBG) {
-            Log.d(TAG, "Dialog Type: " + id);
+            logd("Dialog Type: " + id);
         }
         getKeyGuardAndWakeLock();
 
@@ -328,7 +328,7 @@ public class DMAlertActivity extends Activity {
                 mDialog.setMessage(mMessage);
                 mDialog.setCancelable(true);
                 if (DMClientService.DBG) {
-                    Log.d(TAG, "SHOW_PROGRESS_ALERT_DIALOG");
+                    logd("SHOW_PROGRESS_ALERT_DIALOG");
                 }
                 break;
 
@@ -346,25 +346,25 @@ public class DMAlertActivity extends Activity {
     }
 
     private void getKeyGuardAndWakeLock() {
-        Log.d(TAG, "Inside getKeyGuardAndWakeLock");
+        logd("Inside getKeyGuardAndWakeLock");
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
                 PowerManager.ON_AFTER_RELEASE, TAG);
-        Log.d(TAG, "Acquiring the wakelock");
+        logd("Acquiring the wakelock");
         wl.acquire();
 
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(
                 Context.KEYGUARD_SERVICE);
         mKeyguardLock = keyguardManager.newKeyguardLock(TAG);
-        Log.d(TAG, "Disabling the KeyGuard");
+        logd("Disabling the KeyGuard");
         mKeyguardLock.disableKeyguard();
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (DMClientService.DBG) {
-            Log.d(TAG, "onKeyDown - keyCode: " + keyCode + " DialogType: " + mType);
+            logd("onKeyDown - keyCode: " + keyCode + " DialogType: " + mType);
         }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             onFinish();
@@ -376,7 +376,7 @@ public class DMAlertActivity extends Activity {
     @Override
     public void onDestroy() {
         if (DMClientService.DBG) {
-            Log.d(TAG, "onDestroy - DialogType: " + mType);
+            logd("onDestroy - DialogType: " + mType);
         }
         if (mKeyReceiver != null) {
             unregisterReceiver(mKeyReceiver);
@@ -387,7 +387,7 @@ public class DMAlertActivity extends Activity {
 
     private void onFinish() {
         if (DMClientService.DBG) {
-            Log.d(TAG, "OnFinish: Dialog - " + mType);
+            logd("OnFinish: Dialog - " + mType);
         }
 
         if (mTimeout > 0) {
@@ -412,23 +412,23 @@ public class DMAlertActivity extends Activity {
 
         i.putExtra("ResultCode", mResultCode);
         if (DMClientService.DBG) {
-            Log.d(TAG, "onFinish - ResultCode: " + mResultCode);
+            logd("onFinish - ResultCode: " + mResultCode);
         }
 
         if (mType == TEXTINPUT_ALERT_DIALOG) {
             i.putExtra("ResultData", mResultData);
             if (DMClientService.DBG) {
-                Log.d(TAG, "onFinish - ResultData: " + mResultData);
+                logd("onFinish - ResultData: " + mResultData);
             }
         } else if (mType == SINGLECHOICE_ALERT_DIALOG) {
             i.putExtra("ResultCheckedItem", mCheckedItem);
             if (DMClientService.DBG) {
-                Log.d(TAG, "onFinish - ResultCheckedItem: " + mCheckedItem);
+                logd("onFinish - ResultCheckedItem: " + mCheckedItem);
             }
         } else if (mType == MULTICHOICE_ALERT_DIALOG) {
             i.putExtra("ResultCheckedItems", mCheckedItems);
             if (DMClientService.DBG) {
-                Log.d(TAG, "onFinish - ResultCheckedItems: "
+                logd("onFinish - ResultCheckedItems: "
                         + Arrays.toString(mCheckedItems));
             }
         }
@@ -439,15 +439,15 @@ public class DMAlertActivity extends Activity {
     }
 
     private void releaseKeyGuardAndWakeLock() {
-        Log.d(TAG, "Inside releaseKeyGuardAndWakeLock");
+        logd("Inside releaseKeyGuardAndWakeLock");
         if (wl != null) {
-            Log.d(TAG, "Releasing the wakelock");
+            logd("Releasing the wakelock");
             wl.release();
             wl = null;
         }
 
         if (mKeyguardLock != null) {
-            Log.d(TAG, "Reenable the KeyGuard");
+            logd("Reenable the KeyGuard");
             mKeyguardLock.reenableKeyguard();
             mKeyguardLock = null;
         }
@@ -468,7 +468,7 @@ public class DMAlertActivity extends Activity {
             mResultCode = DMAlert.DM_SERVICE_ALERT_RESP_YES;
             onFinish();
             if (DMClientService.DBG) {
-                Log.d(TAG, "DMAlert.DM_SERVICE_ALERT_RESP_YES");
+                logd("DMAlert.DM_SERVICE_ALERT_RESP_YES");
             }
         }
     };
@@ -484,7 +484,7 @@ public class DMAlertActivity extends Activity {
             mResultCode = DMAlert.DM_SERVICE_ALERT_RESP_NO;
             onFinish();
             if (DMClientService.DBG) {
-                Log.d(TAG, "DMAlert.DM_SERVICE_ALERT_RESP_NO");
+                logd("DMAlert.DM_SERVICE_ALERT_RESP_NO");
             }
         }
     };
@@ -494,11 +494,11 @@ public class DMAlertActivity extends Activity {
         @Override
         public void onCancel(DialogInterface dialog) {
             if (DMClientService.DBG) {
-                Log.d(TAG, "OnCancel: Dialog - " + mType);
+                logd("OnCancel: Dialog - " + mType);
             }
             mResultCode = DMAlert.DM_SERVICE_ALERT_RESP_CANCEL;
             if (DMClientService.DBG) {
-                Log.d(TAG, "DMAlert.DM_SERVICE_ALERT_RESP_CANCEL");
+                logd("DMAlert.DM_SERVICE_ALERT_RESP_CANCEL");
             }
             onFinish();
         }
@@ -520,5 +520,8 @@ public class DMAlertActivity extends Activity {
         }
     };
 
+    private static void logd(String msg) {
+        Log.d(TAG, msg);
+    }
 }
 

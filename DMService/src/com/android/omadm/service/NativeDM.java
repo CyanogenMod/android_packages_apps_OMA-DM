@@ -20,15 +20,14 @@ import android.util.Log;
 
 final class NativeDM {
     private static final String TAG = "NativeDM";
-    private static final boolean DBG = DMClientService.DBG;
 
     private NativeDM() {}
 
     static {
         try {
-            if (DBG) logd("loading libdmengine.so");
+            logd("loading libdmengine.so");
             System.loadLibrary("dmengine");
-            if (DBG) logd("loaded libdmengine.so");
+            logd("loaded libdmengine.so");
         } catch (UnsatisfiedLinkError ule) {
             loge("error: Could not load libdmengine.so", ule);
             throw ule;

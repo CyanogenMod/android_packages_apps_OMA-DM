@@ -26,13 +26,11 @@ public class DMWapPushReceiver extends BroadcastReceiver {
 
     private static final String TAG = "DMWapPushReceiver";
 
-    private static final boolean DBG = DMClientService.DBG;
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION.equals(action)) {
-            if (DBG) Log.d(TAG, action);
+            Log.d(TAG, action);
             Intent iIntent = new Intent(DMIntent.ACTION_WAP_PUSH_RECEIVED_INTERNAL);
             iIntent.replaceExtras(intent);
             context.sendBroadcast(iIntent);

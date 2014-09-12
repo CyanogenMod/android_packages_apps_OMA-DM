@@ -74,14 +74,14 @@ class DMDatabaseTable {
         try {
             cur = db.rawQuery("PRAGMA table_info(" + mName + ')', null);
             int cnt = cur.getCount();
-            Log.d(TAG, String.format("Cursor count for table %s is %d", mName, cnt));
+            logd(String.format("Cursor count for table %s is %d", mName, cnt));
             if (cnt > 0) {
                 ret = new HashMap<String, String>(cur.getCount());
                 while (cur.moveToNext()) {
                     String columnName = cur.getString(TABLE_INFO_PRAGMA_COLUMN_NAME);
                     String dataType = cur.getString(TABLE_INFO_PRAGMA_DATA_TYPE);
                     ret.put(columnName, dataType);
-                    Log.d(TAG, String.format("%s %s", columnName, dataType));
+                    logd(String.format("%s %s", columnName, dataType));
                 }
             }
         } finally {
@@ -94,7 +94,7 @@ class DMDatabaseTable {
     boolean rowValid(ArrayList<String> cols) {
         for (String col : cols) {
             if (!containsColumn(col)) {
-                Log.e(TAG, "Attempt to flex invalid column " + col);
+                loge("Attempt to flex invalid column " + col);
                 return false;
             }
         }
@@ -116,7 +116,7 @@ class DMDatabaseTable {
              Map.Entry<String, Object> entry = (Map.Entry<String, Object>) entryObject;
              String key = entry.getKey();
              if (!containsColumn(key)) {
-                 Log.e(TAG, "Attempt to flex invalid column " + key);
+                 loge("Attempt to flex invalid column " + key);
              }
              String val = entry.getValue().toString();
              cols.add(key);
@@ -127,12 +127,12 @@ class DMDatabaseTable {
              try {
                  insertRow(db, cols, vals);
              } catch (IllegalArgumentException iae) {
-                 Log.e(TAG, "Column count does not match values cannot create insert");
+                 loge("Column count does not match values cannot create insert");
              } catch (Exception e) {
-                 Log.e(TAG, e.getMessage());
+                 loge(e.getMessage());
              }
          }
-         Log.d(TAG, "insertRow - complete");
+         logd("insertRow - complete");
     }
 
     /**
@@ -155,7 +155,7 @@ class DMDatabaseTable {
 
          String insert = String.format("INSERT OR REPLACE INTO %s (%s) VALUES(%s);",
                  getName(), join(cols, ", "), joinNTimes("?", vals.size()));
-         Log.d(TAG, insert);
+         logd(insert);
          SQLiteStatement stmt = null;
          try {
              stmt = db.compileStatement(insert);
@@ -164,12 +164,11 @@ class DMDatabaseTable {
              }
              stmt.execute();
          } catch (Exception e) {
-             Log.e(TAG, String.format("Unexpected exception for %s: %s",
-                     insert, e.getMessage()));
+             loge(String.format("Unexpected exception for %s: %s", insert, e.getMessage()));
          } finally {
            if (stmt != null) stmt.close();
          }
-         Log.d(TAG, "insertRow - complete");
+         logd("insertRow - complete");
     }
 
     /**
@@ -207,5 +206,13 @@ class DMDatabaseTable {
             sb.append(str);
         }
         return sb.toString();
+    }
+
+    private static void logd(String msg) {
+        Log.d(TAG, msg);
+    }
+
+    private static void loge(String msg) {
+        Log.e(TAG, msg);
     }
 }

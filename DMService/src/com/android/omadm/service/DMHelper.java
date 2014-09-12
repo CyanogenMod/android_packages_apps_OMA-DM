@@ -155,7 +155,7 @@ final class DMHelper {
     public static void subscribeForTimeAlert(Context context, int seconds) {
         cancelTimeAlert(context);
 
-        Log.d(TAG, "subscribeForTimeAlert ...");
+        logd("subscribeForTimeAlert ...");
 
         Intent intent = new Intent(context, DMIntentReceiver.class);
         intent.setAction(DMIntent.ACTION_TIMER_ALERT);
@@ -166,12 +166,12 @@ final class DMHelper {
         // Schedule the alarm
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.set(AlarmManager.RTC_WAKEUP, wakeupTime, sender);
-        Log.d(TAG, "subscribeForTimeAlert for " + seconds + " seconds done!");
+        logd("subscribeForTimeAlert for " + seconds + " seconds done!");
     }
 
     // Canceling subscription for time alert
     private static void cancelTimeAlert(Context context) {
-        Log.d(TAG, "cancelTimeAlarm ...");
+        logd("cancelTimeAlarm ...");
 
         Intent intent = new Intent(context, DMIntentReceiver.class);
         intent.setAction(DMIntent.ACTION_TIMER_ALERT);
@@ -179,7 +179,7 @@ final class DMHelper {
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(sender);
-        Log.d(TAG, "cancelTimeAlarm done!");
+        logd("cancelTimeAlarm done!");
     }
 
     // post confirmation notification when UI mode required user interaction
@@ -282,14 +282,14 @@ final class DMHelper {
 
     // set Sprint server URL
     public static void setServerUrl(Context context, String url) {
-        Log.d(TAG, "setServerUrl: " + url);
+        logd("setServerUrl: " + url);
         SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         p.edit().putString(MESSAGE_SERVER_URL_KEY, url).apply();
     }
 
     // set Sprint proxy hostname
     public static void setProxyHostname(Context context, String hostname) {
-        Log.d(TAG, "setProxyHostname: " + hostname);
+        logd("setProxyHostname: " + hostname);
         SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         p.edit().putString(MESSAGE_PROXY_HOSTNAME_KEY, hostname).apply();
     }
@@ -298,7 +298,7 @@ final class DMHelper {
     public static String getServerUrl(Context context) {
         SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         String url = p.getString(MESSAGE_SERVER_URL_KEY, null);
-        Log.d(TAG, "getServerUrl: " + url);
+        logd("getServerUrl: " + url);
         return url;
     }
 
@@ -306,7 +306,7 @@ final class DMHelper {
     public static String getProxyHostname(Context context) {
         SharedPreferences p = context.getSharedPreferences(SERVER_HOSTNAME_OVERRIDE_KEY, 0);
         String hostname = p.getString(MESSAGE_PROXY_HOSTNAME_KEY, null);
-        Log.d(TAG, "getProxyHostname: " + hostname);
+        logd("getProxyHostname: " + hostname);
         return hostname;
     }
 
@@ -316,7 +316,7 @@ final class DMHelper {
         // get message timestamp from preferences
         SharedPreferences p = context.getSharedPreferences(DM_PREFERENCES_KEY, 0);
         long messageTimestamp = p.getLong(MESSAGE_TIMESTAMP_ID_KEY, -1);
-        Log.d(TAG, "isMessageExpired: messageTimestamp is " + messageTimestamp);
+        logd("isMessageExpired: messageTimestamp is " + messageTimestamp);
 
         return messageTimestamp == -1 || System.nanoTime() > (messageTimestamp
                 + MESSAGE_LIFETIME);
@@ -324,7 +324,7 @@ final class DMHelper {
 
     // clean all...  shared preferences, notifications, time alerts....
     public static void cleanAllResources(Context context) {
-        Log.d(TAG, "Inside cleanAllResources");
+        logd("Inside cleanAllResources");
         clearSharedPreferences(context);
         cancelNotification(context, NOTIFICATION_INFORMATIVE_ID);
         cancelNotification(context, NOTIFICATION_CONFIRMATION_ID);
@@ -333,7 +333,7 @@ final class DMHelper {
 
     // remove message and all from shared properties for fota apn
     private static void clearFotaApnSharedPreferences(Context context) {
-        Log.d(TAG, "Inside clearFotaApnSharedPreferences");
+        logd("Inside clearFotaApnSharedPreferences");
         SharedPreferences p = context.getSharedPreferences(
                 FOTA_APN_PREFERENCE_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
@@ -343,7 +343,7 @@ final class DMHelper {
         //remove file with message
         File file = new File(FOTA_APN_FILE_PATH);
         if (file.exists()) {
-            Log.d(TAG, "fotaapnprefs.xml file deleted");
+            logd("fotaapnprefs.xml file deleted");
             // FIXME: don't ignore result of delete
             file.delete();
         }

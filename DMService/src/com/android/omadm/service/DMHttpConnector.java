@@ -119,7 +119,7 @@ public class DMHttpConnector {
         URL url;
         try {
             if (connection != null) {
-                Log.e(TAG, "overwriting old mConnection!");
+                loge("overwriting old mConnection!");
                 mConnection.disconnect();
             }
 
@@ -146,7 +146,7 @@ public class DMHttpConnector {
 
             mConnection = connection;
         } catch (Exception e) {
-            Log.e(TAG, "bad URL", e);
+            loge("bad URL", e);
             return DMResult.SYNCML_DM_INVALID_URI;
         }
 
@@ -163,7 +163,7 @@ public class DMHttpConnector {
                 connection.addRequestProperty(X_SYNCML_HMAC, hmacValue);
             }
         } catch (ProtocolException e) {
-            Log.e(TAG, "error setting headers", e);
+            loge("error setting headers", e);
             return DMResult.SYNCML_DM_IO_FAILURE;
         }
 
@@ -180,14 +180,14 @@ public class DMHttpConnector {
             stream.flush();
 
             int retcode = connection.getResponseCode();
-            if (DBG) Log.d(TAG, urlString + " code: " + retcode + " status: "
+            if (DBG) logd(urlString + " code: " + retcode + " status: "
                     + connection.getResponseMessage());
             return retcode;
         } catch (UnknownHostException ignored) {
-            Log.e(TAG, url + " - Unknown host exception");
+            loge(url + " - Unknown host exception");
             return DMResult.SYNCML_DM_UNKNOWN_HOST;
         } catch (IOException e) {
-            Log.e(TAG, url + " - IOException error: ", e);
+            loge(url + " - IOException error: ", e);
             return DMResult.SYNCML_DM_SOCKET_CONNECT_ERR;
         }
     }
@@ -222,7 +222,7 @@ public class DMHttpConnector {
         }
 
         byte[] data = new byte[dataSize];
-        if (DBG) Log.d(TAG, "response dataSize=" + dataSize);
+        if (DBG) logd("response dataSize=" + dataSize);
 
         String contentType = mConnection.getContentType();
         if (contentType == null) {
@@ -230,7 +230,7 @@ public class DMHttpConnector {
             return null;
         }
 
-        if (DBG) Log.d(TAG, "content type = " + contentType);
+        if (DBG) logd("content type = " + contentType);
 
         try {
             InputStream resInput = mConnection.getInputStream();
@@ -243,7 +243,7 @@ public class DMHttpConnector {
                         readTotal += read;
                     }
                 }
-                if (DBG) Log.d(TAG, "InputStream read len = " + readTotal);
+                if (DBG) logd("InputStream read len = " + readTotal);
             }
         } catch (IOException e) {
             loge("IOException reading response", e);
@@ -301,17 +301,17 @@ public class DMHttpConnector {
                 loge("Using default proxy hostname!!");
                 hostname = "oma.ssprov.sprint.com";
             } else {
-                Log.d(TAG, "no proxy");
+                logd("no proxy");
                 mProxy = null;
                 return;
             }
         }
 
         SocketAddress sa = InetSocketAddress.createUnresolved(hostname, 80);
-        if (DBG) Log.d(TAG, "unresolved socket address created");
+        if (DBG) logd("unresolved socket address created");
 
         mProxy = new Proxy(Proxy.Type.HTTP, sa);
-        if (DBG) Log.d(TAG, "Set Proxy: " + mProxy);
+        if (DBG) logd("Set Proxy: " + mProxy);
     }
 
     static final class HttpLog {
@@ -326,10 +326,10 @@ public class DMHttpConnector {
             try {
                 if (mLogLevel > 0) {
                     mOut = new FileOutputStream(logFileName, true);
-                    Log.d(TAG, "XXXXX creating log file " + logFileName + " XXXXX");
+                    logd("XXXXX creating log file " + logFileName + " XXXXX");
                 }
             } catch (Exception ex) {
-                Log.e(TAG, "Exception opening syncml log file=" + logFileName, ex);
+                loge("Exception opening syncml log file=" + logFileName, ex);
             }
         }
 
@@ -347,7 +347,7 @@ public class DMHttpConnector {
             try {
                 out.write(builder.toString().getBytes());
             } catch (IOException ex) {
-                Log.e(TAG, "Exception writing syncml headers log", ex);
+                loge("Exception writing syncml headers log", ex);
             }
         }
 
@@ -376,7 +376,7 @@ public class DMHttpConnector {
                 }
                 out.write("===================================\n".getBytes());
             } catch (Exception ex) {  // catch all in case JNI throws exception
-                Log.e(TAG, "Exception writing syncml content log", ex);
+                loge("Exception writing syncml content log", ex);
             }
 
         }
@@ -387,7 +387,7 @@ public class DMHttpConnector {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    Log.e(TAG, "Exception writing syncml headers log", ex);
+                    loge("Exception writing syncml headers log", ex);
                 }
                 mOut = null;
             }
