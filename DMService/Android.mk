@@ -42,6 +42,8 @@ LOCAL_JAVA_LIBRARIES := telephony-common
 LOCAL_JNI_SHARED_LIBRARIES := libdmengine libdmjavaplugin
 LOCAL_REQUIRED_MODULES :=  dmAccounts.xml com.android.omadm.service.xml
 
+LOCAL_MULTILIB := 32
+
 include $(BUILD_PACKAGE)
 
 # Use the following include to make our test apk.
