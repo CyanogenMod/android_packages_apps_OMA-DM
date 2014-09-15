@@ -844,21 +844,27 @@ public class ConnmoPlugin extends DmtBasePlugin {
             if(splitPath.length > 0){
                 if (CONNMO_LOGD) Log.d(TAG,"splitPath.length > 0");
 
-                int profileId = RILConstants.DATA_PROFILE_OEM_BASE;
+                int profileId = 0;
+                int classId = 0;
                 if("1".equals(splitPath[2])) {
-                    profileId += 1;   //APN1 -- IMS
+                    profileId = RILConstants.DATA_PROFILE_IMS;   //APN1 -- IMS
+                    classId = 1;
                 }
                 else if("3".equals(splitPath[2])) {
-                    profileId += 3;   //APN3 -- Internet
+                    profileId = RILConstants.DATA_PROFILE_DEFAULT;   //APN3 -- Internet
+                    classId = 3;
                 }
                 else if("2".equals(splitPath[2])) {
-                    profileId += 2;   //APN2  -- Admin/Fota
+                    profileId = RILConstants.DATA_PROFILE_FOTA;   //APN2  -- Admin/Fota
+                    classId = 2;
                 }
                 else if("4".equals(splitPath[2])) {
-                    profileId += 4;   //APN4  -- CBS
+                    profileId = RILConstants.DATA_PROFILE_CBS;   //APN4  -- CBS
+                    classId = 4;
                 }
                 else if("5".equals(splitPath[2])) {
-                    profileId += 5;   //APN5
+                    profileId = RILConstants.DATA_PROFILE_TETHERED;   //APN5
+                    classId = 5;
                 }
                 mWhere = "profile_id" + "=" + "'" + Integer.toString(profileId) + "'";
 
@@ -894,8 +900,7 @@ public class ConnmoPlugin extends DmtBasePlugin {
                         }
                     }
                     if ("profile_id".equals(getColumn)) {
-                        value = new DmtData(Integer.parseInt(value.getString())
-                                                 - RILConstants.DATA_PROFILE_OEM_BASE);
+                        value = new DmtData(classId);
                         Log.d(TAG, "profile_id=" + value.getString());
                     }
                     if (ConnmoPlugin.CONNMO_LOGD) {
@@ -939,21 +944,21 @@ public class ConnmoPlugin extends DmtBasePlugin {
             if (splitPath.length > 0) {
                 if (ConnmoPlugin.CONNMO_LOGD) Log.d(TAG,"Inside splitPath.length > 0");
 
-                int profileId = RILConstants.DATA_PROFILE_OEM_BASE;
+                int profileId = 0;
                 if("1".equals(splitPath[2])) {
-                    profileId += 1;   //APN1 -- IMS
+                    profileId = RILConstants.DATA_PROFILE_IMS;   //APN1 -- IMS
                 }
                 else if("3".equals(splitPath[2])) {
-                    profileId += 3;   //APN2 -- Internet
+                    profileId = RILConstants.DATA_PROFILE_DEFAULT;   //APN2 -- Internet
                 }
                 else if("2".equals(splitPath[2])) {
-                    profileId += 2;   //APN3 -- Admin/Fota
+                    profileId = RILConstants.DATA_PROFILE_FOTA;   //APN3 -- Admin/Fota
                 }
                 else if("4".equals(splitPath[2])) {
-                    profileId += 4;   //APN4 -- CBS
+                    profileId = RILConstants.DATA_PROFILE_CBS;   //APN4 -- CBS
                 }
                 else if("5".equals(splitPath[2])) {
-                    profileId += 5;   //APN5
+                    profileId = RILConstants.DATA_PROFILE_TETHERED;   //APN5
                 }
                 mWhere = "profile_id" + "=" + "'" + Integer.toString(profileId) + "'";
 
