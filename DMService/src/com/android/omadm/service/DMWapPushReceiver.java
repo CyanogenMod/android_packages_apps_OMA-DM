@@ -28,6 +28,9 @@ public class DMWapPushReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (DMHelper.disableIfSecondaryUser(context)) {
+            return;
+        }
         String action = intent.getAction();
         if (Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION.equals(action)) {
             Log.d(TAG, action);

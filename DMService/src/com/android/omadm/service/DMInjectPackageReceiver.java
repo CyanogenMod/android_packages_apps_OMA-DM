@@ -27,6 +27,9 @@ public class DMInjectPackageReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (DMHelper.disableIfSecondaryUser(context)) {
+            return;
+        }
         if ("com.android.omadm.service.InjectPackage0".equals(intent.getAction())) {
             if (DBG) Log.d(TAG, intent.getAction());
             Intent iIntent = new Intent(DMIntent.ACTION_INJECT_PACKAGE_0_INTERNAL);

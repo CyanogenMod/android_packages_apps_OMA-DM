@@ -22,6 +22,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Process;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.android.internal.telephony.Phone;
@@ -36,6 +39,8 @@ public class ConnmoReceiver extends BroadcastReceiver {
 
     private Phone mPhone;
 
+    private static boolean sfirstTriggerReceived = false;
+
     /**
      * OEM CDMA Telephony Manager
      */
@@ -49,7 +54,13 @@ public class ConnmoReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "Received intent: " + intent.getAction());
+        if (disableIfSecondaryUser(context)) {
+            return;
+        }
+        if (isVerizon(context) == false) {
+            return;
+        }
+        logd("Received intent: " + intent.getAction());
         try {
             mPhone = PhoneFactory.getDefaultPhone();
         } catch (Exception e) {
@@ -62,34 +73,33 @@ public class ConnmoReceiver extends BroadcastReceiver {
             Log.e(TAG, "intent action is null");
             return;
         }
-        Log.d(TAG, "XXX ConnmoReceiver intent.getAction(): " + action
+        logd("XXX ConnmoReceiver intent.getAction(): " + action
                 + " context.getFilesDir().getPath(): " + context.getFilesDir().getPath());
-        if (action.equals(Intent.ACTION_BOOT_COMPLETED) ||
-                action.equals("com.android.omadm.service.wait_timer_alert")) {
+        if (action.equals("com.android.omadm.service.wait_timer_alert")) {
             if (mPhone == null) {
                 handleConnmoRepeatDelayIntent(context, 2); //Repeat 2 sec delay
             } else {
-                handleConnmoBootComplete(context);
+                handleConnmoWaitTimerAlert(context);
             }
         } else if (action.equals("com.android.omadm.service.Result")) {
             handledmServiceResult(context);
         }
     }
 
-    private void handleConnmoBootComplete(Context context) {
-        Log.d(TAG, "Inside handleConnmoBootComplte");
+    private void handleConnmoWaitTimerAlert(Context context) {
+        logd("Inside handleConnmoWaitTimerAlert");
         if (isPhoneTypeLTE()) {
             String strIMEI = mPhone.getImei();
-            Log.d(TAG, "strIMEI = " + strIMEI);
+            logd("strIMEI = " + strIMEI);
 
             wakeUpDMService(context, strIMEI, "4g");
         }
     }
 
     private void handledmServiceResult(Context context) {
-        Log.d(TAG, "Inside handledmServiceResult");
+        logd("Inside handledmServiceResult");
         if (getAPN2DisableStatus(context).equalsIgnoreCase("yes")) {
-            Log.d(TAG, "Diasble APN2 Silently");
+            logd("Diasble APN2 Silently");
             startDisableAPN2Service(context);
             clearAPN2DisableStatus(context);
             if (getResetBPStatus(context).equalsIgnoreCase("yes")) {
@@ -97,13 +107,13 @@ public class ConnmoReceiver extends BroadcastReceiver {
             }
             return;
         }
-        Log.d(TAG, "Non APN2 disable session ,No APN2 Disable required");
+        logd("Non APN2 disable session ,No APN2 Disable required");
 
         if (getResetBPStatus(context).equalsIgnoreCase("yes")) {
-            Log.d(TAG, "Reset BP Silently");
+            logd("Reset BP Silently");
             clearBPResetStatus(context);
         } else {
-            Log.d(TAG, "Non eHRPD enable/disable session ,No Reset BP required");
+            logd("Non eHRPD enable/disable session ,No Reset BP required");
         }
     }
 
@@ -117,12 +127,12 @@ public class ConnmoReceiver extends BroadcastReceiver {
         if (getResetBPStatus == null) {
             getResetBPStatus = "no";
         }
-        Log.d(TAG, "getResetBPStatus() = " + getResetBPStatus);
+        logd("getResetBPStatus() = " + getResetBPStatus);
         return getResetBPStatus;
     }
 
     private void clearBPResetStatus(Context mContext) {
-        Log.d(TAG, "Inside clearBPResetStatus");
+        logd("Inside clearBPResetStatus");
         SharedPreferences p = mContext.getSharedPreferences(RESETBP_PREFERENCE_KEY, 0);
         SharedPreferences.Editor ed = p.edit();
         ed.clear();
@@ -136,12 +146,12 @@ public class ConnmoReceiver extends BroadcastReceiver {
         if (getAPN2DisableStatus == null) {
             getAPN2DisableStatus = "no";
         }
-        Log.d(TAG, "getAPN2DisableStatus() = " + getAPN2DisableStatus);
+        logd("getAPN2DisableStatus() = " + getAPN2DisableStatus);
         return getAPN2DisableStatus;
     }
 
     private void clearAPN2DisableStatus(Context mContext) {
-        Log.d(TAG, "Inside clearAPN2DisableStatus");
+        logd("Inside clearAPN2DisableStatus");
         SharedPreferences p = mContext
                 .getSharedPreferences(ConnmoConstants.APN2_PREFERENCE_NAME, 0);
         SharedPreferences.Editor ed = p.edit();
@@ -169,7 +179,7 @@ public class ConnmoReceiver extends BroadcastReceiver {
 
     private void handleConnmoRepeatDelayIntent(Context context, int seconds) {
 
-        Log.d(TAG, "handleConnmoRepeatDelayIntent ...");
+        logd("handleConnmoRepeatDelayIntent ...");
         Intent intent = new Intent("com.android.omadm.service.wait_timer_alert");
         PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent, 0);
 
@@ -180,7 +190,50 @@ public class ConnmoReceiver extends BroadcastReceiver {
         // Schedule the alarm
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), sender);
-        Log.d(TAG, "handleConnmoRepeatDelayIntent for " + seconds + " second done!");
+        logd("handleConnmoRepeatDelayIntent for " + seconds + " second done!");
+    }
+
+    public static boolean isRunningAsOwner() {
+        return Process.myUserHandle().isOwner();
+    }
+
+    public static boolean disableIfSecondaryUser(Context context) {
+        if (sfirstTriggerReceived == false) {
+            sfirstTriggerReceived = true;
+            if (!isRunningAsOwner()) {
+                PackageManager pm = context.getPackageManager();
+                logd("Disabling com.android.sdm.plugins.connmo for secondary user");
+                pm.setApplicationEnabledSetting("com.android.sdm.plugins.connmo",
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0 );
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVerizon(Context context) {
+        TelephonyManager tm = TelephonyManager.from(context);
+        String simOperator = tm.getSimOperator();
+        String imsi = tm.getSubscriberId();
+        logd("simOperator: " + simOperator + " IMSI: " + imsi);
+        if (!simOperator.isEmpty() || !imsi.isEmpty()) {
+            for (String s : context.getResources().getStringArray(R.array.supported_plmns)) {
+                if ((!simOperator.isEmpty() && s.equals(simOperator)) ||
+                        (!imsi.isEmpty() && imsi.startsWith(s))) {
+                    logd("We have a Verizon UICC");
+                    return true;
+                }
+            }
+        } else {
+            /* If simOperator is not available, assume Verizon */
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void logd(String msg) {
+        Log.d(TAG, msg);
     }
 
 } // end of ConnmoReceiver class
