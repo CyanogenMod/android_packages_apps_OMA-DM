@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Process;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import java.io.File;
@@ -147,6 +148,8 @@ final class DMHelper {
     public static final String AKEY_PREFERENCE_KEY = "akeyvalue";
 
     public static final String AKEY_VALUE_KEY = "akey";
+
+    private static boolean sfirstTriggerReceived = false;
 
     // private constructor
     private DMHelper() {}
@@ -356,7 +359,20 @@ final class DMHelper {
     public static void cleanFotaApnResources(Context context) {
         if (DBG) logd("Inside cleanFotaApnResources");
         clearFotaApnSharedPreferences(context);
+    }
 
+    public static boolean disableIfSecondaryUser(Context context) {
+        if (sfirstTriggerReceived == false) {
+            sfirstTriggerReceived = true;
+            if (!isRunningAsOwner()) {
+                PackageManager pm = context.getPackageManager();
+                logd("Disabling com.android.omadm.service for secondary user");
+                pm.setApplicationEnabledSetting("com.android.omadm.service",
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0 );
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void logd(String msg) {
