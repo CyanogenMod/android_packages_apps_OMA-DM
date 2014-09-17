@@ -18,6 +18,14 @@ package com.android.sdm.plugins.connmo;
 
 public interface ConnmoConstants {
 
+    // SharedPreference name and key for APN 1-5's name
+    String APN_PREFERENCE_NAME = "apn_preference";
+    String APN1_NAME = "apn1_name";
+    String APN2_NAME = "apn2_name";
+    String APN3_NAME = "apn3_name";
+    String APN4_NAME = "apn4_name";
+    String APN5_NAME = "apn5_name";
+
     // SharedPreference name and key to disable APN 2
     String APN2_PREFERENCE_NAME = "apn2_disable_state";
     String APN2_DISABLE_KEY = "apn2_disable";
