@@ -532,7 +532,7 @@ public class DmtData implements Parcelable {
             case NODE:
                 childNodes.clear();
                 int childNodeCount = in.readInt();
-                if (childNodeCount != 0) {
+                for (int i = 0; i < childNodeCount; i++) {
                     String name = in.readString();
                     DmtData value = new DmtData(in);
                     childNodes.put(name, value);
