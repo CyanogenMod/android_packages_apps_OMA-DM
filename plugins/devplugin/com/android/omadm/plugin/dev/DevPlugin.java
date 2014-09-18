@@ -92,17 +92,20 @@ public class DevPlugin extends DmtBasePlugin {
         if (path.equals("./DevDetail/SwV") || path.equals("./DevDetail/FwV")) {
             String SwV;
             try {
-                SwV = SystemProperties.get("ro.build.version.full");
-                if (null == SwV || SwV.equals("")) {
-                    SwV = SystemProperties.get("ro.build.id", null) + "~"
-                            + SystemProperties.get("ro.build.config.version", null) + "~"
-                            + SystemProperties.get("gsm.version.baseband", null) + "~"
-                            + SystemProperties.get("ro.gsm.flexversion", null);
+                if (!isSprint() && path.equals("./DevDetail/SwV")) {
+                    SwV = "Android " + SystemProperties.get("ro.build.version.release");
+                } else {
+                    SwV = SystemProperties.get("ro.build.version.full");
+                    if (null == SwV || SwV.equals("")) {
+                        SwV = SystemProperties.get("ro.build.id", null) + "~"
+                                + SystemProperties.get("ro.build.config.version", null) + "~"
+                                + SystemProperties.get("gsm.version.baseband", null) + "~"
+                                + SystemProperties.get("ro.gsm.flexversion", null);
+                    }
                 }
             } catch (RuntimeException e) {
                 SwV = "Unknown";
             }
-
             data = new DmtData(SwV);
         } else if ("./DevDetail/HwV".equals(path)) {
             String HwV;
@@ -451,5 +454,19 @@ public class DevPlugin extends DmtBasePlugin {
 
     private static void loge(String s, Throwable tr) {
         Log.e(TAG, s, tr);
+    }
+
+    private boolean isSprint() {
+        TelephonyManager tm = (TelephonyManager) mContext
+            .getSystemService(Context.TELEPHONY_SERVICE);
+        String simOperator = tm.getSimOperator();
+        String imsi = tm.getSubscriberId();
+        logd("simOperator: " + simOperator + " IMSI: " + imsi);
+        /* Use MEID for sprint */
+        if ("310120".equals(simOperator) || (imsi != null && imsi.startsWith("310120"))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
