@@ -186,13 +186,14 @@ public class DiagmonPlugin extends DmtBasePlugin {
                 mRootPath));
 
         for (String diagPath : nodes.keySet()) {
+            DmtData data = nodes.get(diagPath);
             if (diagPath.equals(DIAGMON_ROOT)) {
                 diagPath = "";
             }
             if (DiagmonPlugin.DBG) {
                 Log.i(TAG, "put node = '" + diagPath + "'");
             }
-            node = new DmtPluginNode(diagPath, nodes.get(diagPath));
+            node = new DmtPluginNode(diagPath, data);
             hMap.put(diagPath, node);
         }
 
