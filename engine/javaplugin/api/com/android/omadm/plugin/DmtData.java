@@ -23,7 +23,7 @@ import android.util.Log;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -126,7 +126,7 @@ public class DmtData implements Parcelable {
 
     private float floatValue;
 
-    private final HashMap<String, DmtData> childNodes = new HashMap<String, DmtData>();
+    private final LinkedHashMap<String, DmtData> childNodes = new LinkedHashMap<String, DmtData>();
 
     /**
      * Data represent a default value, it is only used for setting default value
