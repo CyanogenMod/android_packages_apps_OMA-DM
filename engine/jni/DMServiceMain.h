@@ -49,7 +49,7 @@ extern "C" {
 static const char* const javaDMEnginePackage = "com/android/omadm/service/NativeDM";
 
 jobject getNetConnector();
-jobject getDmAlert(JNIEnv *env);
+jobject getDMAlert(JNIEnv *env);
 
 #ifdef __cplusplus
 }

@@ -214,16 +214,16 @@ JNIEXPORT jint JNICALL startFotaClientSession(JNIEnv* jenv, jclass,
     g_sessionObj = jdmobj;
 
     const char* szDmServerId = jenv->GetStringUTFChars(jServerId, NULL);
-    const char* szDmAlertStr = NULL;
+    const char* szDMAlertStr = NULL;
     if (jAlertStr != NULL) {
-        szDmAlertStr = jenv->GetStringUTFChars(jAlertStr, NULL);
+        szDMAlertStr = jenv->GetStringUTFChars(jAlertStr, NULL);
     }
 
     DmtPrincipal principal(szDmServerId);
 
     DMString alertURI("./DevDetail/Ext/SystemUpdate");
     DMString strEmpty;
-    DmtFirmAlert alert(alertURI, strEmpty, szDmAlertStr, "chr", strEmpty, strEmpty);
+    DmtFirmAlert alert(alertURI, strEmpty, szDMAlertStr, "chr", strEmpty, strEmpty);
     DmtSessionProp prop(alert, true);
 
     g_cancelSession = 0;
@@ -231,7 +231,7 @@ JNIEXPORT jint JNICALL startFotaClientSession(JNIEnv* jenv, jclass,
     ret_status = DmtTreeFactory::StartServerSession(principal, prop);
 
     if (jAlertStr != NULL) {
-        jenv->ReleaseStringUTFChars(jAlertStr, szDmAlertStr);
+        jenv->ReleaseStringUTFChars(jAlertStr, szDMAlertStr);
     }
 
     g_sessionObj = NULL;
@@ -347,9 +347,9 @@ jobject getNetConnector()
     return env->CallObjectMethod(g_sessionObj, jgetNet);
 }
 
-jobject getDmAlert(JNIEnv* env)
+jobject getDMAlert(JNIEnv* env)
 {
-   LOGD(("DM Alert: enter getDmAlert()"));
+   LOGD(("DM Alert: enter getDMAlert()"));
    if (NULL == g_sessionObj) {
        LOGE(("DM Alert: g_sessionObj is NULL!"));
        return NULL;
@@ -362,16 +362,16 @@ jobject getDmAlert(JNIEnv* env)
    }
    LOGD(("DM Alert: success env->GetObjectClass(...)"));
 
-   jmethodID jdmGetDmAlert = env->GetMethodID(jdmSessionClz,
-            "getDmAlert",
-            "()Lcom/android/omadm/service/DmAlert;");
-   if ( NULL == jdmGetDmAlert ) {
+   jmethodID jdmGetDMAlert = env->GetMethodID(jdmSessionClz,
+            "getDMAlert",
+            "()Lcom/android/omadm/service/DMAlert;");
+   if ( NULL == jdmGetDMAlert ) {
        LOGE(("DM Alert: env->GetMethodID(jdmSessionClz) failed!"));
        return NULL;
    }
    LOGD(("DM Alert: success env->GetMethodID(...)"));
 
-   return env->CallObjectMethod(g_sessionObj, jdmGetDmAlert);
+   return env->CallObjectMethod(g_sessionObj, jdmGetDMAlert);
 }
 
 JNIEXPORT jint JNICALL cancelSession(JNIEnv*, jclass)

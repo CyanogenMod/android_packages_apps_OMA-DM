@@ -33,7 +33,7 @@ DMServiceAlert::DMServiceAlert() : m_jDmEnv(NULL), m_jDmAlertCls(NULL), m_jDmAle
    }
    LOGD("DMServiceAlert: Get JNI Env success.");
 
-   m_jDmAlertObj = getDmAlert(m_jDmEnv);
+   m_jDmAlertObj = getDMAlert(m_jDmEnv);
    if ( NULL == m_jDmAlertObj) {
       LOGE("DMServiceAlert: m_jDmEnv->CallObjectMethod failed!");
       return;
