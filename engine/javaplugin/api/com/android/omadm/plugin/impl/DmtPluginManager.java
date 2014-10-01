@@ -45,6 +45,7 @@ import java.util.Map;
 public final class DmtPluginManager {
 
     private static final String TAG = "DM_DmtPluginManager";
+    private static final boolean DBG = false;
 
     private static Context sContext;
 
@@ -106,11 +107,11 @@ public final class DmtPluginManager {
                     return;
                 }
 
-                logd("Calling bindService: uid=\"" + mUid + "\" path=\"" + mPath + '"');
+                if (DBG) logd("Calling bindService: uid=\"" + mUid + "\" path=\"" + mPath + '"');
                 sContext.bindService(intent, mConnector,Context.BIND_AUTO_CREATE);
 
                 wait(10000);        // FIXME: wait not in loop!
-                logd("Waiting is finished");
+                if (DBG) logd("Waiting is finished");
             } catch (Exception e) {
                 loge("exception in waitForConnection", e);
             }
@@ -126,7 +127,7 @@ public final class DmtPluginManager {
     }
 
     public static void setContext(Context context) {
-        logd("Enter setContext(" + context + ')');
+        if (DBG) logd("Enter setContext(" + context + ')');
 
         if (context == null) {
             logd("Context is null!");
@@ -135,7 +136,7 @@ public final class DmtPluginManager {
 
         Context appContext = context.getApplicationContext();
 
-        logd("app context is: " + appContext);
+        if (DBG) logd("app context is: " + appContext);
 
         sContext = appContext;
     }
@@ -149,8 +150,8 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public boolean initJavaPlugin(String path, String[] parameters) {
-        logd("Enter initJavaPlugin: path = " + path);
-        logd("parameters are: " + Arrays.toString(parameters));
+        if (DBG) logd("Enter initJavaPlugin: path = " + path);
+        if (DBG) logd("parameters are: " + Arrays.toString(parameters));
 
         if (TextUtils.isEmpty(path)) {
             loge("Invalid path!....");
@@ -162,7 +163,7 @@ public final class DmtPluginManager {
             return false;
         }
 
-        logd("Parameters count is " + parameters.length);
+        if (DBG) logd("Parameters count is " + parameters.length);
         if (parameters.length % 2 != 0) {
             loge("Parameter count is not right.");
             return false;
@@ -198,7 +199,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int executeNode(String args, String correlator) {
-        logd("Enter executeNode(\"" + args + "\", \"" + correlator + "\")");
+        if (DBG) logd("Enter executeNode(\"" + args + "\", \"" + correlator + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -242,7 +243,7 @@ public final class DmtPluginManager {
      * @param serverID service ID.
      */
     public void setServerID(String serverID) {
-        logd("Enter setServerID(\"" + serverID + "\")");
+        if (DBG) logd("Enter setServerID(\"" + serverID + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -264,7 +265,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int createInteriorNode(String path) {
-        logd("Enter createInteriorNode(\"" + path + "\")");
+        if (DBG) logd("Enter createInteriorNode(\"" + path + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -289,7 +290,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int createLeafNode(String path, int type, String value) {
-        logd("Enter createLeafNode(\"" + path + "\", " + type + ", \"" + value + "\")");
+        if (DBG) logd("Enter createLeafNode(\"" + path + "\", " + type + ", \"" + value + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -323,7 +324,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int renameNode(String path, String newNodeName) {
-        logd("Enter renameNode(\"" + path + "\", \"" + newNodeName + "\")");
+        if (DBG) logd("Enter renameNode(\"" + path + "\", \"" + newNodeName + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -351,7 +352,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int deleteNode(String path) {
-        logd("Enter deleteNode(\"" + path + "\")");
+        if (DBG) logd("Enter deleteNode(\"" + path + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -376,7 +377,7 @@ public final class DmtPluginManager {
      * @return {@link ErrorCodes#SYNCML_DM_SUCCESS} on success, error code on failure.
      */
     public int setNodeValue(String path, int type, String value) {
-        logd("Enter setNodeValue(\"" + path + "\", " + type + ", \"" + value + "\")");
+        if (DBG) logd("Enter setNodeValue(\"" + path + "\", " + type + ", \"" + value + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -408,7 +409,7 @@ public final class DmtPluginManager {
      * @throws DmtException in case of error.
      */
     public String[] getNodeValue(String path) throws DmtException {
-        logd("Enter getNodeValue(\"" + path + "\")");
+        if (DBG) logd("Enter getNodeValue(\"" + path + "\")");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -495,7 +496,7 @@ public final class DmtPluginManager {
      * @throws DmtException on any exception
      */
     public String[] getNodes() throws DmtException {
-        logd("Enter getNodes...");
+        if (DBG) logd("Enter getNodes...");
 
         if (mPluginConnection == null) {
             loge("There is no bound plug-in");
@@ -532,12 +533,12 @@ public final class DmtPluginManager {
             return new String[0];
         }
 
-        logd("Data plugin has " + pluginNodes.size() + " nodes.");
+        if (DBG) logd("Data plugin has " + pluginNodes.size() + " nodes.");
         String[] resStrArr = new String[pluginNodes.size() * 3];
 
         int i = 0;
         for (String key : pluginNodes.keySet()) {
-            logd("No." + i + " : " + key);
+            if (DBG) logd("No." + i + " : " + key);
             DmtPluginNode tmpNode = pluginNodes.get(key);
             if (tmpNode == null) {
                 throw new DmtException("Invalid map of all nodes");
@@ -583,7 +584,7 @@ public final class DmtPluginManager {
     }
 
     public void release() {
-        logd("Enter release... " + mPath);
+        if (DBG) logd("Enter release... " + mPath);
 
         if (mPluginConnection == null) {
             return;
@@ -605,7 +606,7 @@ public final class DmtPluginManager {
     }
 
     private boolean bindPluginService() {
-        logd("Enter bindPluginService...");
+        if (DBG) logd("Enter bindPluginService...");
 
         if (sContext == null) {
             loge("Undefined context!");
@@ -629,7 +630,7 @@ public final class DmtPluginManager {
                 return false;
             }
 
-            logd("context  = " + sContext.toString());
+            if (DBG) logd("context  = " + sContext.toString());
 
             // FIXME: mServerID is never set, remove this?
             if (mServerID != null) {

@@ -108,7 +108,7 @@ LOCAL_C_INCLUDES += $(JNI_H_INCLUDE)
 DM_CFLAGS :=  -DVRTXMC \
               -DDM_ATOMIC_SUPPORTED \
               -DLOB_SUPPORT \
-              -DXPL_LOG_LEVEL=XPL_LOG_ALL \
+              -DXPL_LOG_LEVEL=XPL_LOG_Warn \
               -DDM_NO_LOCKING \
               -DDM_NO_SESSION_LIB \
               -DTNDS_SUPPORT

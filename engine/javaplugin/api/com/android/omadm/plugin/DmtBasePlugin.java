@@ -23,7 +23,7 @@ import java.util.Map;
 public abstract class DmtBasePlugin extends IDmtPlugin.Stub {
 
     private String mServerId;
-    protected static final boolean DEBUG = true;
+    protected static final boolean DEBUG = false;
 
     private int mOperationResult;   // = ErrorCodes.SYNCML_DM_SUCCESS;
 

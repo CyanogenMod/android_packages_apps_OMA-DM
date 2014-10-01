@@ -119,7 +119,7 @@ void XPL_LOG_Shutdown();
   #define XPL_LOG_LEVEL XPL_LOG_ALL      
 #endif
 
-#if ( XPL_LOG_LEVEL == XPL_LOG_ERROR ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
+#if ( XPL_LOG_LEVEL == XPL_LOG_DEBUG ) || ( XPL_LOG_LEVEL == XPL_LOG_WARN ) || ( XPL_LOG_LEVEL == XPL_LOG_ERROR ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
   #define XPL_LOG_DM_API_Error2( args... )   XPL_LOG_Error(XPL_LOG_PORT_DM_API,   args)
   #define XPL_LOG_DM_PLG_Error2( args... )   XPL_LOG_Error(XPL_LOG_PORT_DM_PLG,   args)
   #define XPL_LOG_DM_TMN_Error2( args... )   XPL_LOG_Error(XPL_LOG_PORT_DM_TMN,   args)
@@ -145,7 +145,7 @@ void XPL_LOG_Shutdown();
   #define XPL_LOG_DM_CP_Error( args... ) 
 #endif
 
-#if ( XPL_LOG_LEVEL == XPL_LOG_WARN ) || ( XPL_LOG_LEVEL == XPL_LOG_ERROR ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
+#if ( XPL_LOG_LEVEL == XPL_LOG_DEBUG ) || ( XPL_LOG_LEVEL == XPL_LOG_WARN ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
   #define XPL_LOG_DM_API_Warn2( args... )  XPL_LOG_Warn(XPL_LOG_PORT_DM_API,   args)
   #define XPL_LOG_DM_PLG_Warn2( args... )  XPL_LOG_Warn(XPL_LOG_PORT_DM_PLG,   args)
   #define XPL_LOG_DM_TMN_Warn2( args... )  XPL_LOG_Warn(XPL_LOG_PORT_DM_TMN,   args)
@@ -171,7 +171,7 @@ void XPL_LOG_Shutdown();
   #define XPL_LOG_DM_CP_Warn( args... )
 #endif
 
-#if ( XPL_LOG_LEVEL == XPL_LOG_DEBUG ) || ( XPL_LOG_LEVEL == XPL_LOG_WARN ) || ( XPL_LOG_LEVEL == XPL_LOG_ERROR ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
+#if ( XPL_LOG_LEVEL == XPL_LOG_DEBUG ) || ( XPL_LOG_LEVEL == XPL_LOG_ALL )
   #define XPL_LOG_DM_API_Debug2( args... )   XPL_LOG_Debug(XPL_LOG_PORT_DM_API,  args)
   #define XPL_LOG_DM_PLG_Debug2( args... )   XPL_LOG_Debug(XPL_LOG_PORT_DM_PLG,  args)
   #define XPL_LOG_DM_TMN_Debug2( args... )   XPL_LOG_Debug(XPL_LOG_PORT_DM_TMN,  args)
