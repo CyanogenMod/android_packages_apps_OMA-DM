@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class DiagmonPlugin extends DmtBasePlugin {
     private static final String TAG = "DiagmonPlugin";
-    private static final boolean DBG = DmtBasePlugin.DEBUG;
+    private static final boolean DBG = true;
 
     private String mRootPath;
 
