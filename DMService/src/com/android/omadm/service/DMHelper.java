@@ -329,7 +329,9 @@ final class DMHelper {
     public static void cleanAllResources(Context context) {
         logd("Inside cleanAllResources");
         clearSharedPreferences(context);
-        cancelNotification(context, NOTIFICATION_INFORMATIVE_ID);
+        // Not canceling informative notification since otherwise it disappears very quickly (as
+        // soon as DM session ends which is just a few seconds)
+        // cancelNotification(context, NOTIFICATION_INFORMATIVE_ID);
         cancelNotification(context, NOTIFICATION_CONFIRMATION_ID);
         cancelTimeAlert(context);
     }

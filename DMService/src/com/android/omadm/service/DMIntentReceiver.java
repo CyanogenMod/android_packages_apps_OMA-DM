@@ -505,6 +505,12 @@ public class DMIntentReceiver extends BroadcastReceiver {
         String serverId = new String(data, 24, serverIdLength, StandardCharsets.UTF_8);
         mUIMode = uiMode;
 
+        // fixme: treating invalid uimode as informative for now
+        if(mUIMode != DMHelper.UI_MODE_CONFIRMATION && mUIMode != DMHelper.UI_MODE_INFORMATIVE) {
+            loge("parseAndSaveWapPushMessage: received uimode " + uiMode + "; changing to informative");
+            mUIMode = DMHelper.UI_MODE_INFORMATIVE;
+        }
+
         if (DBG) {
             Log.i(TAG, "Get Provision Package0"
                     + " version:" + version
@@ -522,7 +528,7 @@ public class DMIntentReceiver extends BroadcastReceiver {
         ed.putInt("length", data.length);
         ed.putInt(DMHelper.DM_SESSION_TYPE_KEY, DMIntent.TYPE_PKG0_NOTIFICATION);
         ed.putLong(DMHelper.MESSAGE_TIMESTAMP_ID_KEY, System.nanoTime());
-        ed.putInt(DMHelper.DM_UI_MODE_KEY, uiMode);
+        ed.putInt(DMHelper.DM_UI_MODE_KEY, mUIMode);
 
         ed.apply();
 
