@@ -12,8 +12,13 @@
     <string name="dm_session_confirmation_message">System update for your phone is available</string>
     <string name="dm_session_confirmation_notification_label">System Update</string>
     <string name="dm_session_confirmation_notification_message">New DM session request</string>
-    <string name="dm_session_information_notification_label">System Update</string>
+    <!-- <string name="dm_session_information_notification_label">System Update</string>
     <string name="dm_session_information_notification_message1">Server has initiated a request</string>
     <string name="dm_session_information_notification_message2_success">Device has completed server\'s request</string>
-    <string name="dm_session_information_notification_message2_fail">Device failed to complete server\'s request</string>
+    <string name="dm_session_information_notification_message2_fail">Device failed to complete server\'s request</string> -->
+    <string name="dm_session_information_notification_label">Network Update</string>
+    <string name="dm_session_information_notification_message1">The network is preparing service.</string>
+    <string name="dm_session_information_notification_message2_success">Network update successful</string>
+    <string name="dm_session_information_notification_message2_fail">Network update failed</string>
+
 </resources>
