@@ -576,26 +576,19 @@ public class DMIntentReceiver extends BroadcastReceiver {
 
     //try to start DM session or starts Data and Call State Monitoring Service
     private void startProcess(Context context) {
-
         //wrj348 - VZW customization: reject the wap push if phone is in ECB mode or Roaming
         if (!allowDMSession()) {
             return;
         }
-
         setState(context, DMHelper.STATE_APPROVED_BY_USER);
 
-        // try to start DM session or start monitoring service.
-        if (isWifiConnected(context) || isDataNetworkAcceptable(context)) {
-            if ((!isWifiConnected(context)) && isDataNetworkAcceptable(context) && isPhoneTypeLTE()) {
-                logd("startProcess(), start apn state monitoring service");
-                setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
-                //start apn state monitoring service
-                startDataConnectionService(context);
-            } else {
-                startDMSession(context);
-            }
-            //clearSharedProperties();
+        // Start DM session if wifi is available.
+        if (isWifiConnected(context)) {
+            startDMSession(context);
         } else {
+            // request FOTA APN
+            logd("startProcess(), start data connection service");
+            setFotaApnState(context, DMHelper.FOTA_APN_STATE_START_DM_SESSION);
             startDataConnectionService(context);
         }
     }
