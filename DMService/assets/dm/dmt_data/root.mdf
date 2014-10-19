@@ -723,6 +723,15 @@ mime:text/plain
 [/LTE]
 type:node
 access:Get
+[/LTE/BSRMaxTime]
+type:int
+access:Get,Replace
+[/LTE/BSRTimer]
+type:int
+access:Get,Replace
+[/LTE/nextLTEscan]
+type:int
+access:Get,Replace
 [/LTE/APN]
 type:node
 access:Get

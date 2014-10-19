@@ -3805,6 +3805,63 @@
      </CaseSense>
     </DFProperties>
     <Node>
+     <NodeName>BSRMaxTime</NodeName>
+     <Path>./LTE</Path>
+     <DFProperties>
+      <AccessType>
+       <Get/>
+       <Replace/>
+      </AccessType>
+      <DFFormat>
+       <int/>
+      </DFFormat>
+      <DFType>
+       <MIME>text/plain</MIME>
+      </DFType>
+      <CaseSense>
+       <CS/>
+      </CaseSense>
+     </DFProperties>
+    </Node>
+    <Node>
+     <NodeName>BSRTimer</NodeName>
+     <Path>./LTE</Path>
+     <DFProperties>
+      <AccessType>
+       <Get/>
+       <Replace/>
+      </AccessType>
+      <DFFormat>
+       <int/>
+      </DFFormat>
+      <DFType>
+       <MIME>text/plain</MIME>
+      </DFType>
+      <CaseSense>
+       <CS/>
+      </CaseSense>
+     </DFProperties>
+    </Node>
+    <Node>
+     <NodeName>nextLTEscan</NodeName>
+     <Path>./LTE</Path>
+     <DFProperties>
+      <AccessType>
+       <Get/>
+       <Replace/>
+      </AccessType>
+      <DFFormat>
+       <int/>
+      </DFFormat>
+      <DFType>
+       <MIME>text/plain</MIME>
+      </DFType>
+      <CaseSense>
+       <CS/>
+      </CaseSense>
+     </DFProperties>
+    </Node>
+    <Node>
      <NodeName>APN</NodeName>
      <Path>./LTE</Path>
      <DFProperties>
