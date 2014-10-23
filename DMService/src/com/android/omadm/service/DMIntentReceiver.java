@@ -505,10 +505,17 @@ public class DMIntentReceiver extends BroadcastReceiver {
         String serverId = new String(data, 24, serverIdLength, StandardCharsets.UTF_8);
         mUIMode = uiMode;
 
-        // fixme: treating invalid uimode as informative for now
+        // fixme: treating invalid uimode as informative for now for Sprint
         if(mUIMode != DMHelper.UI_MODE_CONFIRMATION && mUIMode != DMHelper.UI_MODE_INFORMATIVE) {
-            loge("parseAndSaveWapPushMessage: received uimode " + uiMode + "; changing to informative");
-            mUIMode = DMHelper.UI_MODE_INFORMATIVE;
+            TelephonyManager tm = TelephonyManager.from(context);
+            String simOperator = tm.getSimOperator();
+            String imsi = tm.getSubscriberId();
+            Log.d(TAG, "simOperator: " + simOperator + " IMSI: " + imsi);
+            if ("310120".equals(simOperator) || (imsi != null && imsi.startsWith("310120"))) {
+                loge("parseAndSaveWapPushMessage: UICC is sprint. Received uimode " + uiMode +
+                        "; changing to informative");
+                mUIMode = DMHelper.UI_MODE_INFORMATIVE;
+            }
         }
 
         if (DBG) {
